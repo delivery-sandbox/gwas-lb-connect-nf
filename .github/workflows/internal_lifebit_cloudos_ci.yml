@@ -1,0 +1,31 @@
+name: CloudOS meta-ci test
+# This workflow is triggered on PRs of type review_requested or ready_for_review, against dev or main
+on:
+   pull_request:
+     types: [review_requested, ready_for_review]
+     branches:
+      - main
+      - dev
+   workflow_dispatch:
+
+jobs:
+  etl_omop2phenofile_test_on_cloudos:
+    runs-on: ubuntu-20.04
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Submit etl_omop2phenofile job to CloudOS using cloudos-cli
+        id: etl_omop2phenofile
+        uses: lifebit-ai/action-cloudos-cli@0.3.0
+        with:
+          apikey:  ${{secrets.CLOUDOS_TOKEN}}
+          cloudos_url: 'https://staging.lifebit.ai'
+          workspace_id: ${{ secrets.CLOUDOS_WORKSPACE_ID }}
+          project_name: 'ci-testing'
+          workflow_name: 'etl_omop2phenofile'
+          nextflow_profile: 'meta_ci_testing'
+          git_commit: '${{ github.event.pull_request.head.sha }}'
+          instance_type: 'm5.4xlarge'
+          cloudos_cli_flags: '--spot --wait-completion -p cohortSpecifications=s3://lifebit-featured-datasets/pipelines/etl_omop2phenofile/user_cohort_specs.json -p covariateSpecifications=s3://lifebit-featured-datasets/pipelines/etl_omop2phenofile/covariate_specs.json'

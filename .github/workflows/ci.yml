@@ -1,0 +1,58 @@
+name: CI test
+# This workflow is triggered on PRs of type review_requested or ready_for_review, against dev or main
+on:
+  pull_request:
+    types: [review_requested, ready_for_review]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nxf_ver: ['20.01.0', '21.04.1']
+    steps:
+      - uses: actions/checkout@v3.0.2
+      - name: Install Nextflow
+        run: |
+          export NXF_VER=${{ matrix.nxf_ver }}
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Cohort from specification file
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile cohortsFromSpec,docker
+
+      - name: Cohort from codelist
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile cohortsFromCodelist,docker
+
+  singularity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        singularity_version: ['3.6.4']
+        nxf_ver: ['20.01.0', '21.04.1']
+    steps:
+      - uses: actions/checkout@v3.0.2
+      - uses: eWaterCycle/setup-singularity@v7
+        with:
+          singularity-version: ${{ matrix.singularity_version }}
+      - name: Install Nextflow
+        run: |
+          export NXF_VER=${{ matrix.nxf_ver }}
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Cohort from specification file
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile cohortsFromSpec,singularity
+
+      - name: Cohort from codelist
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile cohortsFromCodelist,singularity
+
