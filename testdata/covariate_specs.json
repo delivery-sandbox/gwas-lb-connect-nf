@@ -1,0 +1,22 @@
+[
+  {
+    "covariate_name": "cov1",
+    "covariate": "gender"
+  },
+  {
+    "covariate_name": "cov2",
+    "covariate": "race"
+  },
+  {
+    "covariate_name": "cov3",
+    "covariate": "condition_occurrence",
+    "concept_ids": 40481087,
+    "transformation": "binary"
+  },
+  {
+    "covariate_name": "cov4",
+    "covariate": "measurement value",
+    "concept_ids": 3025315,
+    "transformation": "function(x) log(x)"
+  }
+]

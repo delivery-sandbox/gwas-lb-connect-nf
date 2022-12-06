@@ -1,0 +1,9 @@
+{
+  "dbms": "postgresql",
+  "server": "db-dev-v3.cwn2be1hkiri.eu-west-1.rds.amazonaws.com/OHDSI-CDMV5",
+  "port": 5432,
+  "user": "db",
+  "password": "db123",
+  "cdmDatabaseSchema": "cdm",
+  "cohortDatabaseSchema": "public"
+}

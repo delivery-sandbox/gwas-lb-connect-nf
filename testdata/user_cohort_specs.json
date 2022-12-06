@@ -1,0 +1,10 @@
+[
+  {
+    "cohortName": "cohort1",
+    "ancestorConditionConceptsToInclude": 254761
+  },
+  {
+    "cohortName": "cohort2",
+    "ancestorConditionConceptsToExclude": 254761
+  }
+]
