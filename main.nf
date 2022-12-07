@@ -428,7 +428,7 @@ process generate_phenofile {
   val phenofile_name from ch_phenofile_name
 
   output:
-  file("*phe") into (ch_covariates_file)
+  file("*phe") into (ch_pheno_for_standardise)
 
   shell:
   """
@@ -441,6 +441,59 @@ process generate_phenofile {
     --pheno_label=${pheno_label} \
     --convert_plink=${convert_plink} \
     --phenofile_name=${phenofile_name}
+  """
+}
+
+// from gwas-nf pipeline
+
+process standardise_phenofile_and_get_samples {
+
+  label 'gwas_deafault'
+  input:
+  file('original.pheno.tsv') from ch_pheno_for_standardise
+  //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+
+  output:
+  file("notransform.phe") into ch_standardised_pheno
+  file("all_samples.tsv") into ch_all_samples_file
+
+  script:
+  """
+  # make dummy transform file to move params.phenotype_colname to 3rd column
+  # and IGNORE anything that is not the phenotype column or specified covariate_column
+
+  if [ "${params.phenotype_colname}" = "false" ]; then
+    pheno_col=\$(head -n 1 original.pheno.tsv | cut -f3 )
+  else
+    pheno_col=${params.phenotype_colname}
+  fi
+
+  if [ "${params.covariate_cols}" = "ALL" ]; then
+    covar_cols=\$(head -n 1 original.pheno.tsv | cut --complement -f1,2 | tr '\\t' ',')
+  elif [ "${params.covariate_cols}" = "NONE" ]; then
+    covar_cols=" "
+  else
+    covar_cols=${params.covariate_cols}
+  fi
+
+  awk -v covar_cols="\$covar_cols" -v pheno_col="\$pheno_col" '\
+    BEGIN{FS=OFS="\\t"} \
+    NR==1{ \
+      \$1="run_id"; \$2="test"; \
+      print \$0; \
+      split(covar_cols,covs,","); for(i in covs){cols[covs[i]]}; \
+      cols[pheno_col]; \
+      \$1="notransform"; \$2=pheno_col; \
+      for (i=3; i <= NF; i++){if(\$i in cols){\$i=""}else{\$i="IGNORE"}}; \
+      print \$0 \
+    }' original.pheno.tsv > dummmy_transform.tsv
+
+  Rscript '$baseDir/bin/transform_pheno.R' \
+    --pheno original.pheno.tsv \
+    --transform dummmy_transform.tsv \
+    --out_prefix ./
+
+  cut -f1,2 notransform.phe > all_samples.tsv
   """
 }
 
