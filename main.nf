@@ -428,7 +428,7 @@ process generate_phenofile {
   val phenofile_name from ch_phenofile_name
 
   output:
-  file("*phe") into (ch_pheno_for_standardise)
+  file("*phe") into ch_pheno_for_standardise
 
   shell:
   """
@@ -450,7 +450,7 @@ process standardise_phenofile_and_get_samples {
 
   label 'gwas_deafault'
   input:
-  file('original.pheno.tsv') from ch_pheno_for_standardise
+  file(original_pheno_tsv) from ch_pheno_for_standardise
   //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
 
   output:
@@ -463,13 +463,13 @@ process standardise_phenofile_and_get_samples {
   # and IGNORE anything that is not the phenotype column or specified covariate_column
 
   if [ "${params.phenotype_colname}" = "false" ]; then
-    pheno_col=\$(head -n 1 original.pheno.tsv | cut -f3 )
+    pheno_col=\$(head -n 1 $original_pheno_tsv | cut -f3 )
   else
     pheno_col=${params.phenotype_colname}
   fi
 
   if [ "${params.covariate_cols}" = "ALL" ]; then
-    covar_cols=\$(head -n 1 original.pheno.tsv | cut --complement -f1,2 | tr '\\t' ',')
+    covar_cols=\$(head -n 1 $original_pheno_tsv | cut --complement -f1,2 | tr '\\t' ',')
   elif [ "${params.covariate_cols}" = "NONE" ]; then
     covar_cols=" "
   else
@@ -486,10 +486,10 @@ process standardise_phenofile_and_get_samples {
       \$1="notransform"; \$2=pheno_col; \
       for (i=3; i <= NF; i++){if(\$i in cols){\$i=""}else{\$i="IGNORE"}}; \
       print \$0 \
-    }' original.pheno.tsv > dummmy_transform.tsv
+    }' $original_pheno_tsv > dummmy_transform.tsv
 
   Rscript '$baseDir/bin/transform_pheno.R' \
-    --pheno original.pheno.tsv \
+    --pheno $original_pheno_tsv \
     --transform dummmy_transform.tsv \
     --out_prefix ./
 
@@ -552,14 +552,14 @@ process obtain_pipeline_metadata {
 // When the pipeline is run is not run locally
 // Ensure trace report is output in the pipeline results (in 'pipeline_info' folder)
 
-userName = workflow.userName
+// userName = workflow.userName
 
-if ( userName == "ubuntu" || userName == "ec2-user") {
-  workflow.onComplete {
+// if ( userName == "ubuntu" || userName == "ec2-user") {
+//   workflow.onComplete {
 
-  def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
+//   def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
 
-  traceReport = file("/home/${userName}/nf-out/trace.txt")
-  traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
-  }
-}
+//   traceReport = file("/home/${userName}/nf-out/trace.txt")
+//   traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
+//   }
+// }
