@@ -447,6 +447,8 @@ process generate_phenofile {
 
 // from gwas-nf pipeline
 
+def all_params =  params.collect{ k,v -> "$k=$v" }.join(", ")
+
 if (params.omop2pheofile_mode == false){
   Channel
   .fromPath(params.pheno_data)
@@ -1287,6 +1289,7 @@ process het_filter {
   if (params.pheno_transform) {
     process transform_phenofile {
       label 'micro_resources'
+      label 'gwas_default'
 
       input:
       file('original.pheno.tsv') from ch_pheno_for_transform
@@ -1317,6 +1320,7 @@ process het_filter {
   ch_input_for_pheno_cross = ch_pca_keep_files.combine(ch_transformed_phenos)
   process create_ancestry_x_transform_pheno {
     label 'micro_resources'
+    label 'gwas_default'
     tag "${ancestry_group} ${gwas_tag}"
     
     input:
@@ -1342,6 +1346,7 @@ process het_filter {
     ch_input_for_add_pcs = ch_pca_results.combine(ch_crossed_pheno_out, by:0)
     process add_pcs_to_pheno {
       label 'micro_resources'
+      label 'gwas_default'
       tag "${ancestry_group} ${gwas_tag}"
 
       input:
@@ -1425,6 +1430,7 @@ process het_filter {
   process filter_binary_missingness {
     tag "${ancestry_group} ${gwas_tag}"
     label "medium_resources"
+    label 'gwas_default'
     publishDir "${params.outdir}/${ancestry_group}/${gwas_tag}/", mode: 'copy'
 
     input:
@@ -1475,6 +1481,7 @@ process het_filter {
   if (params.bolt_lmm || params.regenie) {
     process convert2bgen {
       label 'medium_resources'
+      label 'gwas_default'
       tag "${ancestry_group} ${gwas_tag}"
       label "convert2bgen"
 
@@ -1503,6 +1510,7 @@ process het_filter {
   if (params.saige) {
     process convert2vcf {
       label 'medium_resources'
+      label 'gwas_default'
       tag "${ancestry_group} ${gwas_tag}"
 
       input:
@@ -1543,6 +1551,7 @@ process het_filter {
     ch_align_pheno_with_grm_variant_plink_in = ch_final_pheno_for_align_grm.combine(ch_pruned_variants_for_grm)
     process align_pheno_with_grm_variant_plink {
       label 'small_resources'
+      label 'gwas_default'
       tag "${ancestry_group} ${gwas_tag}"
       publishDir "${params.outdir}/${ancestry_group}/${gwas_tag}/", mode: 'copy'
 
