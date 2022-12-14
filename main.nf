@@ -360,7 +360,7 @@ if (!!params.codes_to_include) {
     cp ${sqlite_db} omopdb/omopdb.sqlite
     mv omopdb/omopdb.sqlite .
     Rscript simpleCohortSpecFromCodes.R \
-      --incusion=${inclusion} \
+      --inclusion=${inclusion} \
       --exclusion=${exclusion} \
       --vocabulary=${vocabulary} \
       --connection_details=${connection_details} \
