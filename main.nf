@@ -224,8 +224,8 @@ if (params.codes_to_include) {
     .set { ch_codes_to_include }  
 
   Channel
-    .value(params.vocabulary)
-    .set { ch_vocabulary }  
+    .value(params.codes_vocabulary)
+    .set { ch_codes_vocabulary }  
 
   Channel
     .value(params.conceptType)
@@ -402,7 +402,7 @@ if (params.codes_to_include & params.codes_to_exclude) {
     val inclusion from ch_codes_to_include
     val exclusion from ch_codes_to_exclude
     val phenotype_name from ch_phenotype_name
-    val vocabulary from ch_vocabulary
+    val vocabulary from ch_codes_vocabulary
     each file(db_jars) from ch_db_jars_for_codelist
     each file(connection_details) from ch_connection_details_for_codelist
     each file(sqlite_db) from ch_sqlite_db_for_codelist
