@@ -495,7 +495,7 @@ if(!!params.genotypic_linking_table){
     val genotypic_id_col from ch_genotypic_id
 
     output:
-    file("_linked.phe") into (ch_pheno_for_standardise)
+    file("*_linked.phe") into (ch_pheno_for_standardise)
 
     shell:
     """
