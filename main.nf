@@ -207,7 +207,7 @@ if (params.codelistSpecifications) {
 
   Channel
     .value(params.domain)
-    .set{ ch_domain }
+    .into{ ch_domain ; ch_domain_for_codes }
 
   Channel
     .value(params.controlIndexDate)
@@ -229,24 +229,24 @@ if (!!params.codes_to_include) {
 
   Channel
     .value(params.conceptType)
-    .set{ ch_concept_type}
+    .into{ ch_concept_type ; ch_concept_type_for_codes}
 
   Channel
     .value(params.domain)
-    .set{ ch_domain }
+    .into{ ch_control_group_occurrence ; ch_control_group_occurrence_for_codes }
 
   Channel
     .value(params.controlIndexDate)
-    .set{ ch_control_group_occurrence }
+    .into{ ch_control_group_occurrence ; ch_control_group_occurrence_for_codes }
 }
 
 Channel
     .fromPath("${projectDir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
-    .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist }
+    .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist ; ch_db_jars_for_codes}
 
 Channel
     .fromPath(params.sqlite_db)
-    .into { ch_sqlite_db_cohorts; ch_sqlite_db_json; ch_sqlite_db_for_codelist }
+    .into { ch_sqlite_db_cohorts; ch_sqlite_db_json; ch_sqlite_db_for_codelist ; ch_sqlite_db_for_codes }
 
 Channel
     .value(params.convert_plink)
@@ -312,7 +312,7 @@ process retrieve_parameters {
 
   output:
   file ("*.log") into ch_retrieve_ssm_parameters_log
-  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates, ch_connection_details_for_codelist )
+  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates, ch_connection_details_for_codelist ;  ch_connection_details_for_codes)
 
   shell:
   '''
@@ -403,12 +403,12 @@ if (!!params.codes_to_include) {
     val exclusion from ch_codes_to_exclude
     val phenotype_name from ch_phenotype_name
     val vocabulary from ch_codes_vocabulary
-    each file(db_jars) from ch_db_jars_for_codelist
-    each file(connection_details) from ch_connection_details_for_codelist
-    each file(sqlite_db) from ch_sqlite_db_for_codelist
-    val concept_type from ch_concept_type
-    val domain from ch_domain
-    val control_group_occurrence from ch_control_group_occurrence
+    each file(db_jars) from ch_db_jars_for_codes
+    each file(connection_details) from ch_connection_details_for_codes
+    each file(sqlite_db) from ch_sqlite_db_for_codes
+    val concept_type from ch_concept_type_for_codes
+    val domain from ch_domain_for_codes
+    val control_group_occurrence from ch_control_group_occurrence_for_codes
 
     output:
     file("*json") into ( ch_cohort_specification_for_json , ch_cohort_specification_for_cohorts )
