@@ -221,7 +221,7 @@ if (params.codes_to_include) {
 
   Channel
     .value(params.codes_to_exclude)
-    .set { ch_codes_to_include }  
+    .set { ch_codes_to_exclude }  
 
   Channel
     .value(params.codes_vocabulary)
