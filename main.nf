@@ -55,7 +55,7 @@ if (params.tre == 'bi') {
 }
 
 if (params.tre == 'gel') {
- params.config = 'gel.config'
+ params.config = 'conf/gel.config'
 }
 
 /*--------------------------------------------------------
