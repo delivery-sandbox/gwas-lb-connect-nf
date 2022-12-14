@@ -78,7 +78,6 @@ summary['phenofileName']                               = params.phenofileName
 
 summary['covariateSpecifications']                     = params.covariateSpecifications
 summary['cohortSpecifications']                        = params.cohortSpecifications
-summary['codelistSpecifications']                      = params.cohortSpecifications
 summary['domain']                                      = params.domain
 summary['conceptType']                                 = params.conceptType
 summary['controlIndexDate']                            = params.controlIndexDate
@@ -157,17 +156,17 @@ if (!params.covariateSpecifications) {
   \nPlease use --covariateSpecifications."
 }
 
-if (!params.cohortSpecifications & !params.codelistSpecifications & !(!!params.codes_to_include & !!params.codes_to_exclude)) {
-  exit 1, "You have not supplied a file containing user-made cohort(s) specification or a codelist or a list of codes.\
-  \nPlease use --cohortSpecifications or --codelistSpecifications."
+if (!params.cohortSpecifications & !(!!params.codes_to_include)) {
+  exit 1, "You have not supplied a file containing user-made cohort(s) specification or or a list of codes.\
+  \nPlease use --cohortSpecifications or --codes_to_include."
 }
 
-if (!!params.cohortSpecifications & !!params.codelistSpecifications) {
-  exit 1, "Choose either a cohort specifaction or a codelist specfication."
+if (!!params.cohortSpecifications & !(!!params.codes_to_include)) {
+  exit 1, "Choose either a cohort specifaction or a list of codes."
 }
 
-if (!!params.codelistSpecifications & !(!!params.conceptType & !!params.domain & !!params.controlIndexDate)) {
-  exit 1, "When using a codelist specfication you must also specity a conceptType, a domain, and an index date for controls."
+if (!!params.codes_to_include & !(!!params.codes_to_exclude & !!params.conceptType & !!params.domain & !!params.controlIndexDate)) {
+  exit 1, "When using a codes you must also specity codes_to_exclude, a conceptType, a domain, and an index date for controls."
 }
 
 if (!params.database_cdm_schema) {
@@ -195,24 +194,6 @@ if (!!params.cohortSpecifications) {
 Channel
     .value(params.phenofileName)
     .set{ ch_phenofile_name}
-
-if (params.codelistSpecifications) {
-  Channel
-    .fromPath(params.codelistSpecifications)
-    .set { ch_codelist }
-
-  Channel
-    .value(params.conceptType)
-    .set{ ch_concept_type}
-
-  Channel
-    .value(params.domain)
-    .into{ ch_domain ; ch_domain_for_codes }
-
-  Channel
-    .value(params.controlIndexDate)
-    .set{ ch_control_group_occurrence }
-}
 
 if (!!params.codes_to_include) {
   Channel
@@ -242,11 +223,11 @@ if (!!params.codes_to_include) {
 
 Channel
     .fromPath("${projectDir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
-    .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist ; ch_db_jars_for_codes}
+    .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codes}
 
 Channel
     .fromPath(params.sqlite_db)
-    .into { ch_sqlite_db_cohorts; ch_sqlite_db_json; ch_sqlite_db_for_codelist ; ch_sqlite_db_for_codes }
+    .into { ch_sqlite_db_cohorts; ch_sqlite_db_json ; ch_sqlite_db_for_codes }
 
 Channel
     .value(params.convert_plink)
@@ -286,11 +267,6 @@ Channel
   .fromPath("${projectDir}/bin/generatePhenofile.R")
   .set { ch_generate_covariates_script }
 
-
-Channel
-  .fromPath("${projectDir}/bin/simpleCohortSpecFromCsv.R")
-  .set { ch_codelist_script }
-
 Channel
   .fromPath("${projectDir}/bin/simpleCohortSpecFromCodes.R")
   .set { ch_codes_script }
@@ -312,7 +288,7 @@ process retrieve_parameters {
 
   output:
   file ("*.log") into ch_retrieve_ssm_parameters_log
-  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates, ch_connection_details_for_codelist,  ch_connection_details_for_codes)
+  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates,  ch_connection_details_for_codes)
 
   shell:
   '''
@@ -352,44 +328,6 @@ process retrieve_parameters {
 
   echo "Database parameters were retrieved" > ssm_parameter_retrieval.log
   '''
-}
-
-if (params.codelistSpecifications) {
-
-  process generate_user_spec_from_codelist {
-    publishDir "${params.outdir}/cohorts/user_def", mode: "copy"
-
-    input:
-    each file("simpleCohortSpecFromCsv.R") from ch_codelist_script
-    each file(codelist) from ch_codelist
-    each file(db_jars) from ch_db_jars_for_codelist
-    each file(connection_details) from ch_connection_details_for_codelist
-    each file(sqlite_db) from ch_sqlite_db_for_codelist
-    val concept_type from ch_concept_type
-    val domain from ch_domain
-    val control_group_occurrence from ch_control_group_occurrence
-
-    output:
-    file("*json") into ( ch_cohort_specification_for_json , ch_cohort_specification_for_cohorts )
-
-    shell:
-    """
-    ## Make a permanent copy of sqlite file (NB. This is only used in sqlite testing mode)
-    ls -la
-    mkdir omopdb/
-    chmod 0766 ${sqlite_db}
-    cp ${sqlite_db} omopdb/omopdb.sqlite
-    mv omopdb/omopdb.sqlite .
-    Rscript simpleCohortSpecFromCsv.R \
-      --codelist=${codelist} \
-      --connection_details=${connection_details} \
-      --db_jars=${db_jars} \
-      --concept_types=${concept_type} \
-      --domain=${domain} \
-      --control_group_occurrence=${control_group_occurrence}
-    """
-}
-
 }
 
 if (!!params.codes_to_include) {
