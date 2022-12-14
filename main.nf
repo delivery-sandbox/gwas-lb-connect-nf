@@ -214,15 +214,15 @@ if (!!params.codes_to_include) {
 
   Channel
     .value(params.conceptType)
-    .into{ ch_concept_type_for_codes}
+    .set{ ch_concept_type_for_codes}
 
   Channel
     .value(params.domain)
-    .into{ ch_domain_for_codes }
+    .set{ ch_domain_for_codes }
 
   Channel
     .value(params.controlIndexDate)
-    .into{ ch_control_group_occurrence_for_codes }
+    .set{ ch_control_group_occurrence_for_codes }
 }
 
 Channel
