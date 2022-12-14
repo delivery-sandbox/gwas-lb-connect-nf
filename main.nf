@@ -157,8 +157,8 @@ if (!params.covariateSpecifications) {
   \nPlease use --covariateSpecifications."
 }
 
-if (!params.cohortSpecifications & !params.codelistSpecifications) {
-  exit 1, "You have not supplied a file containing user-made cohort(s) specification or a codelist.\
+if (!params.cohortSpecifications & !params.codelistSpecifications & !(!!params.codes_to_include & !!params.codes_to_exclude)) {
+  exit 1, "You have not supplied a file containing user-made cohort(s) specification or a codelist or a list of codes.\
   \nPlease use --cohortSpecifications or --codelistSpecifications."
 }
 
@@ -214,6 +214,32 @@ if (params.codelistSpecifications) {
     .set{ ch_control_group_occurrence }
 }
 
+if (params.codes_to_include) {
+  Channel
+    .value(params.codes_to_include)
+    .set { ch_codes_to_include }
+
+  Channel
+    .value(params.codes_to_exclude)
+    .set { ch_codes_to_include }  
+
+  Channel
+    .value(params.vocabulary)
+    .set { ch_vocabulary }  
+
+  Channel
+    .value(params.conceptType)
+    .set{ ch_concept_type}
+
+  Channel
+    .value(params.domain)
+    .set{ ch_domain }
+
+  Channel
+    .value(params.controlIndexDate)
+    .set{ ch_control_group_occurrence }
+}
+
 Channel
     .fromPath("${projectDir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
     .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist }
@@ -228,8 +254,21 @@ Channel
 
   Channel
     .value(params.pheno_label)
-    .set{ ch_pheno_label }
+    .into{ ch_pheno_label; ch_phenotype_name }
 
+if(params.genotypic_linking_table){
+  Channel
+    .fromPath(params.genotypic_linking_table)
+    .set { ch_linkage_file }
+
+  Channel
+    .value(params.original_id_col)
+    .set{ ch_original_id }
+
+Channel
+    .value(params.genotypic_id_col)
+    .set{ ch_genotypic_id }
+}
 
 /*-------------------------
   Setting up input scripts
@@ -251,6 +290,14 @@ Channel
 Channel
   .fromPath("${projectDir}/bin/simpleCohortSpecFromCsv.R")
   .set { ch_codelist_script }
+
+Channel
+  .fromPath("${projectDir}/bin/simpleCohortSpecFromCodes.R")
+  .set { ch_codes_script }
+
+Channel
+  .fromPath("${projectDir}/bin/addGenotypicLinkage.R")
+  .set { ch_add_genotypic_script }
 
 /*---------------------
   Retrieve parameters
@@ -335,6 +382,49 @@ if (params.codelistSpecifications) {
     mv omopdb/omopdb.sqlite .
     Rscript simpleCohortSpecFromCsv.R \
       --codelist=${codelist} \
+      --connection_details=${connection_details} \
+      --db_jars=${db_jars} \
+      --concept_types=${concept_type} \
+      --domain=${domain} \
+      --control_group_occurrence=${control_group_occurrence}
+    """
+}
+
+}
+
+if (params.codes_to_include & params.codes_to_exclude) {
+
+  process generate_user_spec_from_codes {
+    publishDir "${params.outdir}/cohorts/user_def", mode: "copy"
+
+    input:
+    each file("simpleCohortSpecFromCodes.R") from ch_codes_script
+    val inclusion from ch_codes_to_include
+    val exclusion from ch_codes_to_exclude
+    val phenotype_name from ch_phenotype_name
+    val vocabulary from ch_vocabulary
+    each file(db_jars) from ch_db_jars_for_codelist
+    each file(connection_details) from ch_connection_details_for_codelist
+    each file(sqlite_db) from ch_sqlite_db_for_codelist
+    val concept_type from ch_concept_type
+    val domain from ch_domain
+    val control_group_occurrence from ch_control_group_occurrence
+
+    output:
+    file("*json") into ( ch_cohort_specification_for_json , ch_cohort_specification_for_cohorts )
+
+    shell:
+    """
+    ## Make a permanent copy of sqlite file (NB. This is only used in sqlite testing mode)
+    ls -la
+    mkdir omopdb/
+    chmod 0766 ${sqlite_db}
+    cp ${sqlite_db} omopdb/omopdb.sqlite
+    mv omopdb/omopdb.sqlite .
+    Rscript simpleCohortSpecFromCodes.R \
+      --incusion=${inclusion} \
+      --exclusion=${exclusion} \
+      --vocabulary=${vocabulary} \
       --connection_details=${connection_details} \
       --db_jars=${db_jars} \
       --concept_types=${concept_type} \
@@ -436,7 +526,7 @@ process generate_phenofile {
   val phenofile_name from ch_phenofile_name
 
   output:
-  file("*phe") into ch_pheno_for_standardise
+  file("*phe") into ch_covariates_file_for_linkage
 
   shell:
   """
@@ -451,6 +541,43 @@ process generate_phenofile {
     --phenofile_name=${phenofile_name}
   """
 }
+
+if(!!params.genotypic_linking_table){
+  process add_linkage {
+  publishDir "${params.outdir}/phenofile", mode: "copy"
+
+  input:
+  each file("addGenotypicLinkage.R") from ch_add_genotypic_script
+  each file(covariates_file) from ch_covariates_file_for_linkage
+  each file(linkage_file) from ch_linkage_file
+  val original_id_col from ch_original_id
+  val genotypic_id_col from ch_genotypic_id
+
+
+
+  output:
+  file("*phe") into (ch_pheno_for_standardise)
+
+  shell:
+  """
+  Rscript addGenotypicLinkage.R \
+    --phenofile=${covariates_file} \
+    --linkage=${linkage_file} \
+    --original_ids_column_name=${original_id_col} \
+    --genotypic_ids_column_name=${genotypic_id_col}
+  """
+}
+
+
+}
+
+if(!!params.genotypic_linking_table){
+
+  ch_covariates_file_for_linkage
+    .set{ ch_pheno_for_standardise }
+
+}
+
 }
 
 // from gwas-nf pipeline
