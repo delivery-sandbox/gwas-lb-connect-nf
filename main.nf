@@ -367,7 +367,8 @@ if (!!params.codes_to_include) {
       --db_jars=${db_jars} \
       --concept_types=${concept_type} \
       --domain=${domain} \
-      --control_group_occurrence=${control_group_occurrence}
+      --control_group_occurrence=${control_group_occurrence} \ 
+      --phenotype_name=${phenotype_name}
     """
 }
 
