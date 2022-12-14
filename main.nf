@@ -160,16 +160,16 @@ if (!params.covariateSpecifications) {
   \nPlease use --covariateSpecifications."
 }
 
-if (!params.cohortSpecifications & !(!!params.codes_to_include)) {
-  exit 1, "You have not supplied a file containing user-made cohort(s) specification or or a list of codes.\
+if (!params.cohortSpecifications & !params.codes_to_include) {
+  exit 1, "You have not supplied a file containing user-made cohort(s) specification or a list of codes.\
   \nPlease use --cohortSpecifications or --codes_to_include."
 }
 
-if (!!params.cohortSpecifications & !(!!params.codes_to_include)) {
+if (!!params.cohortSpecifications & !!params.codes_to_include) {
   exit 1, "Choose either a cohort specifaction or a list of codes."
 }
 
-if (!!params.codes_to_include & !(!!params.codes_to_exclude & !!params.conceptType & !!params.domain & !!params.controlIndexDate)) {
+if (!!params.codes_to_include & (!params.codes_to_exclude || !params.conceptType || !params.domain || !params.controlIndexDate)) {
   exit 1, "When using a codes you must also specity codes_to_exclude, a conceptType, a domain, and an index date for controls."
 }
 
