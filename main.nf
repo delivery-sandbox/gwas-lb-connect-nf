@@ -312,7 +312,7 @@ process retrieve_parameters {
 
   output:
   file ("*.log") into ch_retrieve_ssm_parameters_log
-  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates, ch_connection_details_for_codelist ;  ch_connection_details_for_codes)
+  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates, ch_connection_details_for_codelist,  ch_connection_details_for_codes)
 
   shell:
   '''
