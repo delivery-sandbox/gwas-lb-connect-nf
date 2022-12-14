@@ -504,8 +504,6 @@ process generate_cohorts_in_db {
   """
 }
 
-
-
 /*------------------------------------------------------------------------------------------------------------
   Generate a phenofile using the cohort(s) written to the OMOP database and an input covariate specification
 --------------------------------------------------------------------------------------------------------------*/
@@ -544,38 +542,32 @@ process generate_phenofile {
 
 if(!!params.genotypic_linking_table){
   process add_linkage {
-  publishDir "${params.outdir}/phenofile", mode: "copy"
+    publishDir "${params.outdir}/phenofile", mode: "copy"
 
-  input:
-  each file("addGenotypicLinkage.R") from ch_add_genotypic_script
-  each file(covariates_file) from ch_covariates_file_for_linkage
-  each file(linkage_file) from ch_linkage_file
-  val original_id_col from ch_original_id
-  val genotypic_id_col from ch_genotypic_id
+    input:
+    each file("addGenotypicLinkage.R") from ch_add_genotypic_script
+    each file(covariates_file) from ch_covariates_file_for_linkage
+    each file(linkage_file) from ch_linkage_file
+    val original_id_col from ch_original_id
+    val genotypic_id_col from ch_genotypic_id
 
+    output:
+    file("_linked.phe") into (ch_pheno_for_standardise)
 
-
-  output:
-  file("*phe") into (ch_pheno_for_standardise)
-
-  shell:
-  """
-  Rscript addGenotypicLinkage.R \
-    --phenofile=${covariates_file} \
-    --linkage=${linkage_file} \
-    --original_ids_column_name=${original_id_col} \
-    --genotypic_ids_column_name=${genotypic_id_col}
-  """
+    shell:
+    """
+    Rscript addGenotypicLinkage.R \
+      --phenofile=${covariates_file} \
+      --linkage=${linkage_file} \
+      --original_ids_column_name=${original_id_col} \
+      --genotypic_ids_column_name=${genotypic_id_col}
+    """
 }
-
-
 }
 
 if(!!params.genotypic_linking_table){
-
   ch_covariates_file_for_linkage
     .set{ ch_pheno_for_standardise }
-
 }
 
 }
