@@ -361,14 +361,14 @@ if (!!params.codes_to_include) {
     mv omopdb/omopdb.sqlite .
     Rscript simpleCohortSpecFromCodes.R \
       --inclusion=${inclusion} \
+      --phenotype_name=${phenotype_name} \
       --exclusion=${exclusion} \
       --vocabulary=${vocabulary} \
       --connection_details=${connection_details} \
       --db_jars=${db_jars} \
       --concept_types=${concept_type} \
       --domain=${domain} \
-      --control_group_occurrence=${control_group_occurrence} \ 
-      --phenotype_name=${phenotype_name}
+      --control_group_occurrence=${control_group_occurrence}
     """
 }
 
