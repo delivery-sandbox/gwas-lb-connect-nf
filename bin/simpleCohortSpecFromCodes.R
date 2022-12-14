@@ -51,8 +51,8 @@ names(argsL) <- as.data.frame(do.call("rbind", parseArgs(args)))$V1
 args         <- argsL
 rm(argsL)
 
-inclusion <- str_trim(str_split(args$inclusion,", ")[[1]])
-exclusion <- str_trim(str_split(args$exclusion,", ")[[1]])
+inclusion <- str_trim(str_split(args$inclusion,",")[[1]])
+exclusion <- str_trim(str_split(args$exclusion,",")[[1]])
 vocabulary <- args$vocabulary
 phenotype_name <- args$phenotype_name
 connectionDetailsFull <- jsonlite::read_json(args$connection_details)
@@ -70,7 +70,11 @@ connectionDetails <- exec(DatabaseConnector::createConnectionDetails, !!! connec
 connection <- connect(connectionDetails)
 
 ## Read input file and find codes in OMOP
-input_file <- tibble(Phenotype_Short = phenotype_name, Criteria_Ontology = vocabulary, Criteria = c(inclusion, exclusion), Is_Inclusion_Criteria = c(rep(T, length(inclusion)), rep(F, length(exclusion))), Is_Exclusion_Criteria = c(rep(F, length(inclusion)), rep(T, length(exclusion))))
+input_file <- tibble(Phenotype_Short = phenotype_name, 
+                    Criteria_Ontology = vocabulary, 
+                    Criteria = c(inclusion, exclusion), 
+                    Is_Inclusion_Criteria = c(rep(T, length(inclusion)), rep(F, length(exclusion))), 
+                    Is_Exclusion_Criteria = c(rep(F, length(inclusion)), rep(T, length(exclusion))))
 
 input_file_split <- input_file %>%
   split(.$Criteria_Ontology)

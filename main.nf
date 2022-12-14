@@ -78,6 +78,10 @@ summary['phenofileName']                               = params.phenofileName
 
 summary['covariateSpecifications']                     = params.covariateSpecifications
 summary['cohortSpecifications']                        = params.cohortSpecifications
+summary['codes_to_include']                            = params.codes_to_include
+summary['codes_to_exclude']                            = params.codes_to_exclude
+summary['codes_vocabulary']                            = params.codes_vocabulary
+
 summary['domain']                                      = params.domain
 summary['conceptType']                                 = params.conceptType
 summary['controlIndexDate']                            = params.controlIndexDate
