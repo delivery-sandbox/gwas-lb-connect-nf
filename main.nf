@@ -565,7 +565,7 @@ if(!!params.genotypic_linking_table){
 }
 }
 
-if(!!params.genotypic_linking_table){
+if(!params.genotypic_linking_table){
   ch_covariates_file_for_linkage
     .set{ ch_pheno_for_standardise }
 }
