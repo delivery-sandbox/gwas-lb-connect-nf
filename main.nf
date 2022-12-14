@@ -214,7 +214,7 @@ if (params.codelistSpecifications) {
     .set{ ch_control_group_occurrence }
 }
 
-if (params.codes_to_include) {
+if (!!params.codes_to_include) {
   Channel
     .value(params.codes_to_include)
     .set { ch_codes_to_include }
@@ -392,7 +392,7 @@ if (params.codelistSpecifications) {
 
 }
 
-if (params.codes_to_include & params.codes_to_exclude) {
+if (!!params.codes_to_include) {
 
   process generate_user_spec_from_codes {
     publishDir "${params.outdir}/cohorts/user_def", mode: "copy"
