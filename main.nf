@@ -50,6 +50,14 @@ if (params.help) {
 
 
 
+if (params.tre == 'bi') {
+ params.config = 'conf/bi.config'
+}
+
+if (params.tre == 'gel') {
+ params.config = 'conf/gel.config'
+}
+
 /*--------------------------------------------------------
   Defining and showing header with all params information
 -----------------------------------------------------------*/
