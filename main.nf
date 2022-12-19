@@ -802,6 +802,7 @@ if (!params.hail) {
     process pgen {
       tag "${name}_chr${chr}"
       label "large_resources"
+      label 'gwas_default'
       publishDir "${params.outdir}/gwas_filtering", mode: 'copy'
 
       input:
