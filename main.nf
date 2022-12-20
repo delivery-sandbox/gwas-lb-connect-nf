@@ -1764,7 +1764,7 @@ process het_filter {
       echo "##GeneticModel\t${params.regenie_geno_model}" >> header.txt
       echo "##gwas_pipeline_params\t${all_params}" >> header.txt
       cat header.txt ${ancestry_group}-${gwas_tag}-regenie_firth*.regenie > regenie_out.tmp
-      mv regenie_out.tmp ${ancestry_group}-${gwas_tag}-regenie_firth*.regenie
+      mv regenie_out.tmp ${params.tre}_${ancestry_group}-${gwas_tag}-regenie_firth*.regenie
       """
     }
   }
