@@ -1722,7 +1722,7 @@ process het_filter {
       set val(ancestry_group), val(gwas_tag), val(trait_type), file('phenofile.phe'), file('in.bgen'), file('in.sample'), file('in.log'), file(loco), file(pred), file ("covariates.txt"), file ("pheno.txt") from ch_inputs_for_regenie_step2
 
       output:
-      set file("${ancestry_group}-${gwas_tag}-regenie_firth*.regenie"), file("${ancestry_group}-${gwas_tag}-regenie_firth.log")
+      set file("${params.tre}_${ancestry_group}-${gwas_tag}-regenie_firth.regenie"), file("${ancestry_group}-${gwas_tag}-regenie_firth.log")
       script:
       """
       regenie \
@@ -1766,7 +1766,7 @@ process het_filter {
       echo "##GeneticModel\t${params.regenie_geno_model}" >> header.txt
       echo "##gwas_pipeline_params\t${all_params}" >> header.txt
       cat header.txt ${ancestry_group}-${gwas_tag}-regenie_firth*.regenie > regenie_out.tmp
-      mv regenie_out.tmp ${params.tre}_${ancestry_group}-${gwas_tag}-regenie_firth*.regenie
+      mv regenie_out.tmp ${params.tre}_${ancestry_group}-${gwas_tag}-regenie_firth.regenie
       """
     }
   }
