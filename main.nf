@@ -649,6 +649,8 @@ if (params.ld_scores) {
       .set { ch_ld_scores }
 }
 
+if (params.skip_gwas == false) {
+
 process standardise_phenofile_and_get_samples {
 
   label 'gwas_default'
@@ -2243,6 +2245,8 @@ if (params.hail) {
     mv hail_out.tmp ${hail_matrix.simpleName}_hail_GWAS.tsv
     """
     }
+}
+
 }
 
 /*---------------------------
