@@ -1186,6 +1186,7 @@ process het_filter {
   if (params.annotate_with_rsids) {
     process annotate_with_rsids {
       label "medium_resources"
+      label 'gwas_default'
       publishDir "${params.outdir}/with_rsids", mode: 'copy'
 
       input:
