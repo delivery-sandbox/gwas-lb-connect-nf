@@ -205,7 +205,7 @@ if(convert_plink){
     x <- which(between(control$AGE, case$AGE[i] -2, case$AGE[i] +2) & 
                between(control$SEX, as.integer(case$SEX[i]) -0, as.integer(case$SEX[i]) + 0) & 
                control$index==0)
-    control$index[sample(x, min(20, length(x)))] <- i
+    control$index[sample(x, min(4, length(x)))] <- i
     case$index[i] <- i 
   }
 
