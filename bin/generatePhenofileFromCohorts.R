@@ -16,6 +16,7 @@ suppressPackageStartupMessages({
   library(jsonlite)
   library(RJSONIO)
   library(rlang)
+  library(lubridate)
 })
 
 options(scipen = 99999)
@@ -78,8 +79,21 @@ get_covariate_data <- function(connectionDetails, cohort_counts, cohort_table, c
   
   connection <- DatabaseConnector::connect(connectionDetails)
   
-  full_cohort <- DatabaseConnector::querySql(connection, glue::glue("SELECT CAST(COHORT_DEFINITION_ID as character) COHORT_DEFINITION_ID, SUBJECT_ID, PERSON_SOURCE_VALUE FROM {cohort_table} c LEFT JOIN {cdmDatabaseSchema}.person p on c.subject_id = p.person_id", cohort_table = cohort_table), snakeCaseToCamelCase = T)
-  
+  full_cohort <- DatabaseConnector::querySql(connection, glue::glue("
+    WITH CTE AS (SELECT PERSON_ID, max(OBSERVATION_PERIOD_END_DATE) as MAX_OBSERVATION_PERIOD_END_DATE FROM {cdmDatabaseSchema}.OBSERVATION_PERIOD GROUP BY PERSON_ID) 
+    SELECT CAST(COHORT_DEFINITION_ID as character) COHORT_DEFINITION_ID, SUBJECT_ID, PERSON_SOURCE_VALUE, DATE_PART('Year', CTE.MAX_OBSERVATION_PERIOD_END_DATE) - p.YEAR_OF_BIRTH as BIOLOGICAL_AGE, P.YEAR_OF_BIRTH
+    FROM {cohort_table} c LEFT JOIN {cdmDatabaseSchema}.PERSON p on c.SUBJECT_ID = p.PERSON_ID 
+    LEFT JOIN CTE on c.SUBJECT_ID = CTE.PERSON_ID", cohort_table = cohort_table), snakeCaseToCamelCase = T)
+
+  write_csv(full_cohort, "test.csv")
+
+  covariate_spec_ba <- keep(covariate_spec, ~.x$covariate == "biological_age")  
+
+  if(length(covariate_spec_ba) >= 1) full_cohort <- mutate(full_cohort, biologicalAge = coalesce(biologicalAge, year(Sys.Date()) - yearOfBirth)) %>% rename(!! covariate_spec_ba[[1]]$covariate_name := biologicalAge) %>% select(-yearOfBirth)
+  if(length(covariate_spec_ba) == 0) full_cohort <- select(full_cohort, -yearOfBirth, -biologicalAge)
+
+  covariate_spec <- discard(covariate_spec, ~.x$covariate == "biological_age")
+
   all_covs <- map(covariate_spec, function(cov){
     
     covariates_to_report <- filter(covariate_data$covariateRef, str_detect(covariateName, cov$covariate))
@@ -168,7 +182,6 @@ cohortCounts <- read_csv(args$cohort_counts)
 cohortTable <- readLines(args$cohort_table)
 covariateSpec <- jsonlite::fromJSON(args$covariate_spec, simplifyVector = F)
 pheno_label <- args$pheno_label
-convert_plink <- as.logical(args$convert_plink)
 phenofile_name <- args$phenofile_name
 
 if(nrow(cohortCounts) == 0) writeLines("Cohorts contain no patients", "empty_phenofile.tsv")
@@ -190,28 +203,7 @@ walk(str_c("DROP TABLE IF EXISTS ", str_c(cohortTable, c("","_inclusion_result",
 	~DatabaseConnector::dbExecute(connection, .x))
 DatabaseConnector::disconnect(connection)
 
-if(convert_plink){  
-  phenofile <- select(phenofile, `#FID` = personSourceValue, IID = personSourceValue, everything(), !! pheno_label := cohortDefinitionId, -subjectId) %>%
-    mutate(across(matches("SEX|GENDER"), ~case_when(.x == "MALE" ~ "1", .x == "FEMALE" ~ "2", TRUE ~ NA_character_)))
-
-  mutate(phenofile, group = if_else(!! sym(pheno_label) == 2, "case", "control")) %>%
-    mutate(index=0) %>% 
-    split(.$group) %>%
-    list2env(envir = .GlobalEnv)
-
-  set.seed(12345)
-
-  for(i in seq_len(nrow(case))){
-    x <- which(between(control$AGE, case$AGE[i] -2, case$AGE[i] +2) & 
-               between(control$SEX, as.integer(case$SEX[i]) -0, as.integer(case$SEX[i]) + 0) & 
-               control$index==0)
-    control$index[sample(x, min(4, length(x)))] <- i
-    case$index[i] <- i 
-  }
-
-phenofile <- rbind(case, control) %>% filter(index >0) %>%  arrange(index) %>% select(-any_of(c("group", "index")))
-
-}
+phenofile <- select(phenofile, `#FID` = personSourceValue, IID = personSourceValue, everything(), !! pheno_label := cohortDefinitionId, -subjectId) %>%    mutate(across(matches("SEX|GENDER"), ~case_when(.x == "MALE" ~ "1", .x == "FEMALE" ~ "2", TRUE ~ NA_character_)))
 
 write_tsv(phenofile, str_c(phenofile_name, ".phe"))
 
