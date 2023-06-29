@@ -625,12 +625,10 @@ ch_input_pheno_transform = Channel.fromPath("${params.pheno_transform}")
 
 ch_rsid_cpra_table = Channel.fromPath("${params.rsid_cpra_table}")
 
-projectDir = workflow.projectDir
-
-ch_ancestry_inference_Rscript = Channel.fromPath("${projectDir}/bin/Ancestry_Inference.R", followLinks: false)
-ch_rsid_annotation_pyscript = Channel.fromPath("${projectDir}/bin/annotate_with_rsids.py", followLinks: false)
-ch_het_check_pyscript = Channel.fromPath("${projectDir}/bin/remove_het_outliers.py", followLinks: false)
-ch_hail_gwas_script = Channel.fromPath("${projectDir}/bin/hail_gwas.py", followLinks: false)
+ch_ancestry_inference_Rscript = Channel.fromPath("${project_dir}/bin/Ancestry_Inference.R", followLinks: false)
+ch_rsid_annotation_pyscript = Channel.fromPath("${project_dir}/bin/annotate_with_rsids.py", followLinks: false)
+ch_het_check_pyscript = Channel.fromPath("${project_dir}/bin/remove_het_outliers.py", followLinks: false)
+ch_hail_gwas_script = Channel.fromPath("${project_dir}/bin/hail_gwas.py", followLinks: false)
 
 // Fail early if violations in the parameters specified are detected
 if (!params.genotype_files_list && !params.input_folder_location ) {
@@ -721,7 +719,7 @@ process standardise_phenofile_and_get_samples {
   label 'gwas_default'
   input:
   file(original_pheno_tsv) from ch_phenofile_with_id
-  each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+  each file('transform_pheno.R') from Channel.fromPath("${project_dir}/bin/transform_pheno.R")
 
   output:
   file("notransform.phe") into ch_standardised_pheno
@@ -1298,7 +1296,7 @@ process het_filter {
 
       input:
       set file('keep.tsv'), val(name), file('in.bed'), file('in.bim'), file('in.fam'), file('in.log') from ch_input_for_ancestry_inference
-      //file('Ancestry_Inference.R') from Channel.fromPath("${projectDir}/bin/Ancestry_Inference.R")
+      //file('Ancestry_Inference.R') from Channel.fromPath("${project_dir}/bin/Ancestry_Inference.R")
       set val(ref_name), file('ref.bed.xz'), file('ref.bim.xz'), file('ref.fam.xz') from ch_king_reference_data
 
       output:
@@ -1356,7 +1354,7 @@ process het_filter {
 
       input:
       set val(ancestry_group), file('in.tsv'), val(name), file('in.bed'), file('in.bim'), file('in.fam'), file('in.log') from ch_input_for_pca
-      //each file('pca_outliers.R') from Channel.fromPath("${projectDir}/bin/pca_outliers.R")
+      //each file('pca_outliers.R') from Channel.fromPath("${project_dir}/bin/pca_outliers.R")
 
       output:
       set val(ancestry_group), file('pca_results_final.eigenvec'), file('pca_results_final.eigenval') into ch_pca_results
@@ -1425,7 +1423,7 @@ process het_filter {
       input:
       file('original.pheno.tsv') from ch_pheno_for_transform
       file('transform.tsv') from ch_input_pheno_transform
-      each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+      each file('transform_pheno.R') from Channel.fromPath("${project_dir}/bin/transform_pheno.R")
 
 
       output:
