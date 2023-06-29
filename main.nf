@@ -721,7 +721,7 @@ process standardise_phenofile_and_get_samples {
   label 'gwas_default'
   input:
   file(original_pheno_tsv) from ch_phenofile_with_id
-  //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+  each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
 
   output:
   file("notransform.phe") into ch_standardised_pheno
@@ -1425,7 +1425,7 @@ process het_filter {
       input:
       file('original.pheno.tsv') from ch_pheno_for_transform
       file('transform.tsv') from ch_input_pheno_transform
-      //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+      each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
 
 
       output:
