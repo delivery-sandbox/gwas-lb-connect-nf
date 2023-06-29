@@ -71,8 +71,6 @@ summary['phenofile_name']                              = params.phenofile_name
 summary['covariate_specification']                     = params.covariate_specification
 summary['codelist_specification']                      = params.codelist_specification
 summary['sql_specification']                           = params.sql_specification
-summary['ch_cases_specification_for_cohorts']          = params.ch_cases_specification_for_cohorts
-summary['ch_controls_specification_for_cohorts']       = params.ch_controls_specification_for_cohorts
 
 summary['include_descendants']                         = params.include_descendants
 summary['control_index_date']                          = params.control_index_date
@@ -519,7 +517,7 @@ if(!!params.genotypic_linking_table){
     val genotypic_id_col from ch_genotypic_id
 
     output:
-    file("linked_*phe") into (ch_phenofile_with_id)
+    file("linked_*phe") into (ch_phenofile_with_id, ch_phenofile_with_id_controls)
     file("*csv") into (ch_linked_cohort_counts)
 
     shell:
@@ -552,7 +550,7 @@ if(!!params.controls_to_match){
 
     input:
     each file("applyMatchingToPhenofile.R") from ch_apply_matching_script
-    each file(covariates_file) from ch_phenofile_with_id
+    each file(covariates_file) from ch_phenofile_with_id_controls
   
     output:
     file("matched_*phe") into (ch_matched_phenofile)
@@ -572,6 +570,8 @@ if(!!params.controls_to_match){
   } 
 }
 
+}
+
 // from gwas-nf pipeline
 
 def all_params =  params.collect{ k,v -> "$k=$v" }.join(", ")
@@ -581,7 +581,7 @@ if (params.omop2pheofile_mode == false){
   .fromPath(params.pheno_data)
   .ifEmpty { exit 1, "Cannot find phenotype file : ${params.pheno_data}" }
   .into{
-    ch_pheno_for_standardise;
+    ch_phenofile_with_id;
     ch_pheno_for_transform;
   }
 }
@@ -720,7 +720,7 @@ process standardise_phenofile_and_get_samples {
 
   label 'gwas_default'
   input:
-  file(original_pheno_tsv) from ch_pheno_for_standardise
+  file(original_pheno_tsv) from ch_phenofile_with_id
   //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
 
   output:
@@ -2324,19 +2324,19 @@ process obtain_pipeline_metadata {
 
   input:
   val repository from ch_repository
-  val commit from ch_commitId
+  val commit from ch_commit_id
   val revision from ch_revision
-  val script_name from ch_scriptName
-  val script_file from ch_scriptFile
-  val project_dir from ch_projectDir
-  val launch_dir from ch_launchDir
-  val work_dir from ch_workDir
-  val user_name from ch_userName
-  val command_line from ch_commandLine
-  val config_files from ch_configFiles
+  val script_name from ch_script_name
+  val script_file from ch_script_file
+  val project_dir from ch_project_dir
+  val launch_dir from ch_launch_dir
+  val work_dir from ch_work_dir
+  val user_name from ch_user_name
+  val command_line from ch_command_line
+  val config_files from ch_config_files
   val profile from ch_profile
   val container from ch_container
-  val container_engine from ch_containerEngine
+  val container_engine from ch_container_engine
   val raci_owner from ch_raci_owner
   val domain_keywords from ch_domain_keywords
 
