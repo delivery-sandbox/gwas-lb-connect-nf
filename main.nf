@@ -756,7 +756,7 @@ process standardise_phenofile_and_get_samples {
       print \$0 \
     }' $original_pheno_tsv > dummmy_transform.tsv
 
-  Rscript '$baseDir/bin/transform_pheno.R' \
+  Rscript transform_pheno.R \
     --pheno $original_pheno_tsv \
     --transform dummmy_transform.tsv \
     --out_prefix ./
@@ -1431,7 +1431,7 @@ process het_filter {
 
       script:
       """
-      Rscript '$baseDir/bin/transform_pheno.R' --pheno original.pheno.tsv --transform transform.tsv --out_prefix ./
+      Rscript transform_pheno.R --pheno original.pheno.tsv --transform transform.tsv --out_prefix ./
       """
 
     }
