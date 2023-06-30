@@ -889,7 +889,7 @@ if (!params.hail) {
         --double-id \
         --threads ${task.cpus -1} \
         --memory ${task.memory.toMega() -200} \
-        --keep samples.txt
+        #--keep samples.txt
 
       rm -rf ${name}.*
 
