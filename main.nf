@@ -66,34 +66,40 @@ summary['Working dir']                                 = workflow.workDir
 summary['Script dir']                                  = workflow.projectDir
 summary['User']                                        = workflow.userName
 
-summary['phenofileName']                               = params.phenofileName
+summary['phenofile_name']                              = params.phenofile_name
 
-summary['covariateSpecifications']                     = params.covariateSpecifications
-summary['cohortSpecifications']                        = params.cohortSpecifications
-summary['codes_to_include']                            = params.codes_to_include
-summary['codes_to_exclude']                            = params.codes_to_exclude
-summary['codes_vocabulary']                            = params.codes_vocabulary
+summary['covariate_specification']                     = params.covariate_specification
+summary['codelist_specification']                      = params.codelist_specification
+summary['sql_specification']                           = params.sql_specification
 
-summary['domain']                                      = params.domain
-summary['conceptType']                                 = params.conceptType
-summary['controlIndexDate']                            = params.controlIndexDate
+summary['include_descendants']                         = params.include_descendants
+summary['control_index_date']                          = params.control_index_date
 
-summary['sqlite_db']                                   = params.sqlite_db
+summary['controls_to_match']                            = params.controls_to_match
+summary['min_controls_to_match']                        = params.min_controls_to_match
+summary['match_age_tolerance']                          = params.match_age_tolerance
+
 summary['database_dbms']                               = params.database_dbms
 summary['database_cdm_schema']                         = params.database_cdm_schema
 summary['database_cohort_schema']                      = params.database_cohort_schema
 
 if (params.param_via_aws){
-  summary['aws_param_name_for_database_host']          = params.aws_param_name_for_database_host
-  summary['aws_param_name_for_database_name']          = params.aws_param_name_for_database_name
-  summary['aws_param_name_for_database_port']          = params.aws_param_name_for_database_port
-  summary['aws_param_name_for_database_username']      = params.aws_param_name_for_database_username
+  summary['database_host_ssm_name']          = params.database_host_ssm_name
+  summary['database_name_ssm_name']          = params.database_name_ssm_name
+  summary['database_port_ssm_name']          = params.database_port_ssm_name
+  summary['database_password_ssm_name']      = params.database_password_ssm_name
 } else {
   summary['database_name']                             = params.database_name
   summary['database_host']                             = params.database_host
   summary['database_port']                             = params.database_port
   summary['database_username']                         = params.database_username
 }
+
+summary['s3_outdir']                                   = params.s3_outdir
+summary['data_source']                                 = params.data_source
+summary['phenotype_group']                             = params.phenotype_group
+summary['phenotype_label']                             = params.phenotype_label
+summary['analysis_name']                               = params.analysis_name
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -108,20 +114,20 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 // - All variables to be put into channels in order for them to be available later in `main.nf`.
 
 ch_repository         = Channel.of(workflow.manifest.homePage)
-ch_commitId           = Channel.of(workflow.commitId ?: "Not available is this execution mode. Please run 'nextflow run ${workflow.manifest.homePage} [...]' instead of 'nextflow run main.nf [...]'")
-ch_revision           = Channel.of(workflow.manifest.version)
+ch_commit_id           = Channel.of(workflow.commitId ?: "Not available is this execution mode. Please run 'nextflow run ${workflow.manifest.homePage} [...]' instead of 'nextflow run main.nf [...]'")
+ch_revision            = Channel.of(workflow.manifest.version)
 
-ch_scriptName         = Channel.of(workflow.scriptName)
-ch_scriptFile         = Channel.of(workflow.scriptFile)
-ch_projectDir         = Channel.of(workflow.projectDir)
-ch_launchDir          = Channel.of(workflow.launchDir)
-ch_workDir            = Channel.of(workflow.workDir)
-ch_userName           = Channel.of(workflow.userName)
-ch_commandLine        = Channel.of(workflow.commandLine)
-ch_configFiles        = Channel.of(workflow.configFiles)
-ch_profile            = Channel.of(workflow.profile)
-ch_container          = Channel.of(workflow.container)
-ch_containerEngine    = Channel.of(workflow.containerEngine)
+ch_script_name         = Channel.of(workflow.scriptName)
+ch_script_file         = Channel.of(workflow.scriptFile)
+ch_project_dir         = Channel.of(workflow.projectDir)
+ch_launch_dir          = Channel.of(workflow.launchDir)
+ch_work_dir            = Channel.of(workflow.workDir)
+ch_user_name           = Channel.of(workflow.userName)
+ch_command_line        = Channel.of(workflow.commandLine)
+ch_config_files        = Channel.of(workflow.configFiles)
+ch_profile             = Channel.of(workflow.profile)
+ch_container           = Channel.of(workflow.container)
+ch_container_engine    = Channel.of(workflow.containerEngine)
 
 /*----------------------------------------------------------------
   Setting up additional variables used for documentation purposes
@@ -143,26 +149,26 @@ if (params.omop2pheofile_mode == true) {
 
 // Define channels
 
-projectDir = workflow.projectDir
+project_dir = workflow.projectDir
+if( workflow.workDir.toString().startsWith("/${params.cloudos_workdir}") ) {
+  job_id = workflow.workDir.subpath(8,9).toString()
+}
+run_date = new java.text.SimpleDateFormat("yyyy_MM_dd").format(new Date())
 
 // Ensuring essential parameters are supplied
 
-if (!params.covariateSpecifications) {
+if (!params.covariate_specification) {
   exit 1, "You have not supplied a file containing details of the covariates to include in the phenofile.\
-  \nPlease use --covariateSpecifications."
+  \nPlease use --covariate_specification."
 }
 
-if (!params.cohortSpecifications & !params.codes_to_include) {
-  exit 1, "You have not supplied a file containing user-made cohort(s) specification or a list of codes.\
-  \nPlease use --cohortSpecifications or --codes_to_include."
+if (!params.codelist_specification && (!params.case_cohort_json || !params.control_cohort_json ) && !params.sql_specification) {
+  exit 1, "You have not supplied a codelist or case/control JSON definitions or a SQL query.\
+  \nPlease use --codelist_specification or --case_cohort_json and --control_cohort_json or --sql_specification."
 }
 
-if (!!params.cohortSpecifications & !!params.codes_to_include) {
-  exit 1, "Choose either a cohort specifaction or a list of codes."
-}
-
-if (!!params.codes_to_include & (!params.codes_to_exclude || !params.conceptType || !params.domain || !params.controlIndexDate)) {
-  exit 1, "When using a codes you must also specity codes_to_exclude, a conceptType, a domain, and an index date for controls."
+if (params.codelist_specification && (params.case_cohort_json || params.control_cohort_json || params.sql_specification )) {
+  exit 1, "Supply either a codelist or JSON case/control definitions or SQL query"
 }
 
 if (!params.database_cdm_schema) {
@@ -175,63 +181,51 @@ if (!params.database_cohort_schema) {
   \nPlease use --database_cohort_schema."
 }
 
+// Check all fields are present for S3 output
+// 'params.analysis_name' is assumed to take the name of the pipeline
+if (params.s3_outdir && [params.data_source as Boolean, params.phenotype_group as Boolean, params.phenotype_label as Boolean, params.analysis_name as Boolean].count(true) < 4) {
+  exit 1, "When using the S3 publishDir, all of the following parameters are needed: s3_outdir, data_source, phenotype_group, phenotype_label and analysis_name"
+}
+
 // Setting up channels
 
 Channel
-  .fromPath(params.covariateSpecifications)
+  .fromPath(params.covariate_specification)
   .set { ch_covariate_specification }
 
-if (!!params.cohortSpecifications) {
-  Channel
-    .fromPath(params.cohortSpecifications)
-    .into { ch_cohort_specification_for_json ; ch_cohort_specification_for_cohorts }
-}
-
 Channel
-    .value(params.phenofileName)
+    .value(params.phenofile_name)
     .set{ ch_phenofile_name}
 
-if (!!params.codes_to_include) {
+if (params.codelist_specification) {
   Channel
-    .value(params.codes_to_include)
-    .set { ch_codes_to_include }
+    .fromPath(params.codelist_specification)
+    .set { ch_codelist }
+}
+
+if (params.sql_specification) {
+  Channel
+    .value(params.sql_specification)
+    .set { ch_sql_specification }
+}
+
+if (params.control_cohort_json && params.case_cohort_json){
+  Channel
+    .fromPath(params.case_cohort_json)
+    .set { ch_cases_specification_for_cohorts }
 
   Channel
-    .value(params.codes_to_exclude)
-    .set { ch_codes_to_exclude }  
-
-  Channel
-    .value(params.codes_vocabulary)
-    .set { ch_codes_vocabulary }  
-
-  Channel
-    .value(params.conceptType)
-    .set{ ch_concept_type_for_codes}
-
-  Channel
-    .value(params.domain)
-    .set{ ch_domain_for_codes }
-
-  Channel
-    .value(params.controlIndexDate)
-    .set{ ch_control_group_occurrence_for_codes }
+    .fromPath(params.control_cohort_json)
+    .set { ch_controls_specification_for_cohorts }
 }
 
 Channel
-    .fromPath("${projectDir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
-    .into { ch_db_jars_for_cohorts; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codes}
+    .value(params.control_index_date)
+    .set{ ch_control_group_occurrence }
 
 Channel
-    .fromPath(params.sqlite_db)
-    .into { ch_sqlite_db_cohorts; ch_sqlite_db_json ; ch_sqlite_db_for_codes }
-
-Channel
-    .value(params.convert_plink)
-    .set{ ch_convert_plink }
-
-  Channel
-    .value(params.pheno_label)
-    .into{ ch_pheno_label; ch_phenotype_name }
+    .fromPath("${project_dir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
+    .into { ch_db_jars_for_cohorts; ch_db_jars_for_cohorts_sql; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist }
 
 if(params.genotypic_linking_table){
   Channel
@@ -242,7 +236,7 @@ if(params.genotypic_linking_table){
     .value(params.original_id_col)
     .set{ ch_original_id }
 
-Channel
+  Channel
     .value(params.genotypic_id_col)
     .set{ ch_genotypic_id }
 }
@@ -252,49 +246,67 @@ Channel
 ----------------------------*/
 
 Channel
-  .fromPath("${projectDir}/bin/createCohortJsonFromSpec.R")
-  .set { ch_cohort_json_from_spec_script }
+  .fromPath("${project_dir}/bin/generateJsonFromCodelist.R")
+  .set { ch_json_from_codelist_script }
 
 Channel
-  .fromPath("${projectDir}/bin/generateCohorts.R")
+  .fromPath("${project_dir}/bin/generateCohortsFromJson.R")
   .set { ch_generate_cohorts_script }
 
 Channel
-  .fromPath("${projectDir}/bin/generatePhenofile.R")
+  .fromPath("${project_dir}/bin/generateCohortsFromSql.R")
+  .set { ch_generate_cohorts_sql }
+
+Channel
+  .fromPath("${project_dir}/bin/applyMatchingToPhenofile.R")
+  .set { ch_apply_matching_script }
+
+Channel
+  .fromPath("${project_dir}/bin/generatePhenofileFromCohorts.R")
   .set { ch_generate_covariates_script }
 
 Channel
-  .fromPath("${projectDir}/bin/simpleCohortSpecFromCodes.R")
-  .set { ch_codes_script }
-
-Channel
-  .fromPath("${projectDir}/bin/addGenotypicLinkage.R")
+  .fromPath("${project_dir}/bin/addGenotypicLinkageToPhenofile.R")
   .set { ch_add_genotypic_script }
 
 /*---------------------
   Retrieve parameters
 -----------------------*/
-if (params.param_via_aws){
-  if ((!params.aws_param_name_for_database_name) || (!params.aws_param_name_for_database_host) || (!params.aws_param_name_for_database_port) || (!params.aws_param_name_for_database_username) || (!params.aws_param_name_for_database_password)) {
+if (params.param_via_aws || params.param_via_aws_dlc){
+  if ((!params.database_name_ssm_name) || (!params.database_host_ssm_name) || (!params.database_port_ssm_name) || (!params.database_password_ssm_name) || (!params.database_username_ssm_name)) {
     exit 1, "You have not supplied all aws parameter locations.\
-    \nPlease use --aws_param_name_for_*."
+    \nPlease use --database_*_ssm_name."
   }
 }
 process retrieve_parameters {
-
+  label 'omop_to_phenofile'
   output:
   file ("*.log") into ch_retrieve_ssm_parameters_log
-  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_covariates,  ch_connection_details_for_codes)
+  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_cohorts_sql, ch_connection_details_for_covariates, ch_connection_details_for_codelist )
 
   shell:
   '''
   if [ !{params.param_via_aws} = true ]
   then
-    database_host=\$(aws ssm get-parameter --name "!{params.aws_param_name_for_database_host}" --region !{params.aws_region} | jq -r ".Parameter.Value")
-    database_port=\$(aws ssm get-parameter --name "!{params.aws_param_name_for_database_port}" --region !{params.aws_region} | jq -r ".Parameter.Value")
-    database_username=\$(aws ssm get-parameter --name "!{params.aws_param_name_for_database_username}" --region !{params.aws_region} | jq -r ".Parameter.Value")
-    database_password=\$(aws ssm get-parameter --name "!{params.aws_param_name_for_database_password}" --region !{params.aws_region} | jq -r ".Parameter.Value")
-    database_name=\$(aws ssm get-parameter --name "!{params.aws_param_name_for_database_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+    database_host=\$(aws ssm get-parameter --name "!{params.database_host_ssm_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+    database_port=\$(aws ssm get-parameter --name "!{params.database_port_ssm_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+    database_username=\$(aws ssm get-parameter --name "!{params.database_password_ssm_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+    database_password=\$(aws ssm get-parameter --name "!{params.database_username_ssm_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+    database_name=\$(aws ssm get-parameter --name "!{params.database_name_ssm_name}" --region !{params.aws_region} | jq -r ".Parameter.Value")
+  elif [ !{params.param_via_aws_dlc} = true ]
+  then
+    EC2_AVAIL_ZONE=\$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    echo "DEBUG: ec2_avail_zone: \${EC2_AVAIL_ZONE}"
+    EC2_REGION=\$(echo \${EC2_AVAIL_ZONE} | sed 's/[a-z]\$//')
+    echo "DEBUG: ec2_region: \${EC2_REGION}"
+    CLIENT=\$(aws ssm get-parameter --name !{params.cloudos_client} --region "\${EC2_REGION}" | jq -r ".Parameter.Value")
+    ENV=\$(aws ssm get-parameter --name !{params.cloudos_env} --region "\${EC2_REGION}" | jq -r ".Parameter.Value")
+    PARAMS_PATH="/\${CLIENT}/\${ENV}"
+    database_host=\$(aws ssm get-parameter --name "${PARAMS_PATH}/!{params.database_host_ssm_name}" --region \${EC2_REGION} | jq -r ".Parameter.Value")
+    database_port=\$(aws ssm get-parameter --name "${PARAMS_PATH}/!{params.database_port_ssm_name}" --region \${EC2_REGION} | jq -r ".Parameter.Value")
+    database_username=\$(aws ssm get-parameter --name "${PARAMS_PATH}/!{params.database_username_ssm_name}" --region \${EC2_REGION} | jq -r ".Parameter.Value")
+    database_password=\$(aws ssm get-parameter --name "${PARAMS_PATH}/!{params.database_password_ssm_name}" --region \${EC2_REGION} | jq -r ".Parameter.Value")
+    database_name=\$(aws ssm get-parameter --name "${PARAMS_PATH}/!{params.database_name_ssm_name}" --region \${EC2_REGION} | jq -r ".Parameter.Value")
   else
     database_host="!{params.database_host}"
     database_port="!{params.database_port}"
@@ -319,124 +331,126 @@ process retrieve_parameters {
   string+='"cdmDatabaseSchema":"!{params.database_cdm_schema}",\n'
   string+='"cohortDatabaseSchema":"!{params.database_cohort_schema}"\n'
   string+="\n}"
-  echo $string
   echo -e $string > connection_details.json
 
   echo "Database parameters were retrieved" > ssm_parameter_retrieval.log
   '''
 }
 
-if (!!params.codes_to_include) {
 
-  process generate_user_spec_from_codes {
-    publishDir "${params.outdir}/cohorts/user_def", mode: "copy"
+if (params.codelist_specification) {
+
+  process generate_cohort_jsons_from_codelist {
+    label 'omop_to_phenofile'
+    publishDir "${params.outdir}/cohorts/json_definitions", mode: "copy"
+    if (params.s3_outdir) {
+      publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id/cohorts/json_definitions", mode: "copy"
+    }
 
     input:
-    each file("simpleCohortSpecFromCodes.R") from ch_codes_script
-    val inclusion from ch_codes_to_include
-    val exclusion from ch_codes_to_exclude
-    val phenotype_name from ch_phenotype_name
-    val vocabulary from ch_codes_vocabulary
-    each file(db_jars) from ch_db_jars_for_codes
-    each file(connection_details) from ch_connection_details_for_codes
-    each file(sqlite_db) from ch_sqlite_db_for_codes
-    val concept_type from ch_concept_type_for_codes
-    val domain from ch_domain_for_codes
-    val control_group_occurrence from ch_control_group_occurrence_for_codes
+    each file("generateCohortJsonFromCodelist.R") from ch_json_from_codelist_script
+    each file(codelist) from ch_codelist
+    each file(db_jars) from ch_db_jars_for_codelist
+    each file(connection_details) from ch_connection_details_for_codelist
 
     output:
-    file("*json") into ( ch_cohort_specification_for_json , ch_cohort_specification_for_cohorts )
+    file("cases_*.json") into ch_cases_specification_for_cohorts
+    file("controls_*.json") into ch_controls_specification_for_cohorts
 
     shell:
     """
-    ## Make a permanent copy of sqlite file (NB. This is only used in sqlite testing mode)
-    ls -la
-    mkdir omopdb/
-    chmod 0766 ${sqlite_db}
-    cp ${sqlite_db} omopdb/omopdb.sqlite
-    mv omopdb/omopdb.sqlite .
-    Rscript simpleCohortSpecFromCodes.R \
-      --inclusion=${inclusion} \
-      --phenotype_name=${phenotype_name} \
-      --exclusion=${exclusion} \
-      --vocabulary=${vocabulary} \
+    Rscript generateCohortJsonFromCodelist.R \
+      --codelist=${codelist} \
+      --include_descendants=${params.include_descendants} \
       --connection_details=${connection_details} \
-      --db_jars=${db_jars} \
-      --concept_types=${concept_type} \
-      --domain=${domain} \
-      --control_group_occurrence=${control_group_occurrence}
+      --db_jars=${db_jars}
     """
-}
+  }
 
 }
-
-
-
-/*---------------------------------------------------------------------------------------
-  Obtain a OHDSI JSON cohort definition using a user-made input JSON specification file
-------------------------------------------------------------------------------------------*/
-
-process generate_cohort_jsons_from_user_spec {
-  publishDir "${params.outdir}/cohorts/json", mode: "copy"
-
-  input:
-  each file("createCohortJsonFromSpec.R") from ch_cohort_json_from_spec_script
-  each file(spec) from ch_cohort_specification_for_json
-  each file(db_jars) from ch_db_jars_for_json
-  each file(connection_details) from ch_connection_details_for_json
-  each file(sqlite_db) from ch_sqlite_db_json
-
-  output:
-  file("*json") into (ch_cohort_json_for_cohorts)
-
-  shell:
-  """
-  ## Make a permanent copy of sqlite file (NB. This is only used in sqlite testing mode)
-  mkdir omopdb/
-  chmod 0766 ${sqlite_db}
-  cp ${sqlite_db} omopdb/omopdb.sqlite
-  mv omopdb/omopdb.sqlite .
-  Rscript createCohortJsonFromSpec.R \
-  --cohort_specs=${spec} \
-  --connection_details=${connection_details} \
-  --db_jars=${db_jars}
-  """
-}
-
 
 
 /*-------------------------------------------------------------------------
   Using the cohort definition file(s), write cohort(s) in the OMOP database
 ----------------------------------------------------------------------------*/
 
+if(!params.sql_specification){
+
 process generate_cohorts_in_db {
+  label 'omop_to_phenofile'
   publishDir "${params.outdir}", mode: "copy",
-   saveAs: { filename -> 
+   saveAs: { filename ->
       if (filename.endsWith('csv')) "cohorts/$filename"
+      else if  (filename.endsWith('sql')) "cohorts/sql/$filename"
     }
+  if (params.s3_outdir) {
+    publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id", mode: "copy",
+      saveAs: { filename ->
+        if (filename.endsWith('csv')) "cohorts/$filename"
+        else if  (filename.endsWith('sql')) "cohorts/sql/$filename"
+      }
+  }
 
   input:
   each file("generateCohorts.R") from ch_generate_cohorts_script
   each file(connection_details) from ch_connection_details_for_cohorts
-  file("*") from ch_cohort_json_for_cohorts.collect()
-  each file(spec) from ch_cohort_specification_for_cohorts
+  each file(cases) from ch_cases_specification_for_cohorts
+  each file(controls) from ch_controls_specification_for_cohorts
   each file(db_jars) from ch_db_jars_for_cohorts
-  each file(sqlite_db) from ch_sqlite_db_cohorts
+  val control_index_date from ch_control_group_occurrence
 
   output:
   file("*txt") into (ch_cohort_table_name)
   file("*csv") into (ch_cohort_counts)
-  file("omopdb.sqlite") into (ch_sqlite_db_covariates)
+  file("*sql") into (ch_cohort_sql)
 
   shell:
   """
-  ## Make a permanent copy of sqlite file (NB. This is only used in sqlite testing mode)
-  mkdir omopdb/
-  chmod 0766 ${sqlite_db}
-  cp ${sqlite_db} omopdb/omopdb.sqlite
-  mv omopdb/omopdb.sqlite .
-  Rscript generateCohorts.R --connection_details=${connection_details} --db_jars=${db_jars} --cohort_specs=${spec}
+  Rscript generateCohorts.R \
+    --connection_details=${connection_details} \
+    --db_jars=${db_jars} \
+    --cases=${cases} \
+    --controls=${controls} \
+    --control_index_date=${control_index_date} \
+    --pheno_label=${params.pheno_label}
   """
+}
+
+}
+
+if(params.sql_specification){
+
+process generate_cohorts_in_db_sql {
+  label 'omop_to_phenofile'
+  publishDir "${params.outdir}", mode: "copy",
+   saveAs: { filename -> 
+      if (filename.endsWith('csv')) "cohorts/$filename"
+      else if  (filename.endsWith('sql')) "cohorts/sql/$filename"
+    }
+
+  input:
+  each file("generateCohortsFromSql.R") from ch_generate_cohorts_sql
+  each file(connection_details) from ch_connection_details_for_cohorts_sql
+  val query from ch_sql_specification
+  each file(db_jars) from ch_db_jars_for_cohorts_sql
+
+  output:
+  file("*txt") into (ch_cohort_table_name)
+  file("*csv") into (ch_cohort_counts)
+  file("*sql") into (ch_cohort_sql)
+
+  shell:
+  """
+  echo '${query}' >> query.sql
+  echo 'test'
+  Rscript generateCohortsFromSql.R \
+    --connection_details=${connection_details} \
+    --db_jars=${db_jars} \
+    --query=query.sql \
+    --pheno_label=${params.pheno_label}
+  """
+}
+
 }
 
 /*------------------------------------------------------------------------------------------------------------
@@ -444,7 +458,11 @@ process generate_cohorts_in_db {
 --------------------------------------------------------------------------------------------------------------*/
 
 process generate_phenofile {
-  publishDir "${params.outdir}/phenofile", mode: "copy"
+  label 'omop_to_phenofile'
+  publishDir "${params.outdir}/phenofile/", mode: "copy"
+  if (params.s3_outdir) {
+    publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id/phenofile/", mode: "copy"
+  }
 
   input:
   each file("generatePhenofile.R") from ch_generate_covariates_script
@@ -453,13 +471,10 @@ process generate_phenofile {
   each file(covariate_specs) from ch_covariate_specification
   each file(cohort_counts) from ch_cohort_counts
   each file(db_jars) from ch_db_jars_for_covariates
-  each file(sqlite_db) from ch_sqlite_db_covariates
-  val pheno_label from ch_pheno_label
-  val convert_plink from ch_convert_plink
   val phenofile_name from ch_phenofile_name
 
   output:
-  file("*phe") into ch_covariates_file_for_linkage
+  file("*phe") into (ch_phenofile)
 
   shell:
   """
@@ -469,25 +484,41 @@ process generate_phenofile {
     --cohort_table=${cohort_table_name} \
     --covariate_spec=${covariate_specs} \
     --db_jars=${db_jars} \
-    --pheno_label=${pheno_label} \
-    --convert_plink=${convert_plink} \
+    --pheno_label=${params.pheno_label} \
     --phenofile_name=${phenofile_name}
   """
 }
 
+if(!params.genotypic_linking_table){
+  ch_phenofile.into{ch_phenofile_with_id; ch_phenofile_with_id_controls}
+}
+
 if(!!params.genotypic_linking_table){
   process add_linkage {
-    publishDir "${params.outdir}/phenofile", mode: "copy"
+    label 'omop_to_phenofile'
+    publishDir "${params.outdir}", mode: "copy",
+    saveAs: { filename ->
+         if (filename.endsWith('.csv')) "cohorts/$filename"
+         else "phenofile/$filename"
+         }
+    if (params.s3_outdir) {
+      publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id", mode: "copy",
+        saveAs: { filename ->
+          if (filename.endsWith('.csv')) "cohorts/$filename"
+          else "phenofile/$filename"
+        }
+    }
 
     input:
     each file("addGenotypicLinkage.R") from ch_add_genotypic_script
-    each file(covariates_file) from ch_covariates_file_for_linkage
+    each file(covariates_file) from ch_phenofile
     each file(linkage_file) from ch_linkage_file
     val original_id_col from ch_original_id
     val genotypic_id_col from ch_genotypic_id
 
     output:
-    file("*_linked.phe") into (ch_pheno_for_standardise)
+    file("linked_*phe") into (ch_phenofile_with_id, ch_phenofile_with_id_controls)
+    file("*csv") into (ch_linked_cohort_counts)
 
     shell:
     """
@@ -495,14 +526,48 @@ if(!!params.genotypic_linking_table){
       --phenofile=${covariates_file} \
       --linkage=${linkage_file} \
       --original_ids_column_name=${original_id_col} \
-      --genotypic_ids_column_name=${genotypic_id_col}
+      --genotypic_ids_column_name=${genotypic_id_col} \
+      --pheno_label=${params.pheno_label}
     """
-}
+  } 
 }
 
-if(!params.genotypic_linking_table){
-  ch_covariates_file_for_linkage
-    .set{ ch_pheno_for_standardise }
+if(!!params.controls_to_match){
+  process match_controls {
+    label 'omop_to_phenofile'
+    publishDir "${params.outdir}", mode: "copy",
+    saveAs: { filename ->
+         if (filename.endsWith('.csv')) "cohorts/$filename"
+         else "phenofile/$filename"
+         }
+    if (params.s3_outdir) {
+      publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id", mode: "copy",
+        saveAs: { filename ->
+          if (filename.endsWith('.csv')) "cohorts/$filename"
+          else "phenofile/$filename"
+        }
+    }
+
+    input:
+    each file("applyMatchingToPhenofile.R") from ch_apply_matching_script
+    each file(covariates_file) from ch_phenofile_with_id_controls
+  
+    output:
+    file("matched_*phe") into (ch_matched_phenofile)
+    file("*csv") into (ch_matched_cohort_counts)
+
+    shell:
+    """
+    Rscript applyMatchingToPhenofile.R \
+      --phenofile=${covariates_file} \
+      --pheno_label=${params.pheno_label} \
+      --controls_to_match=${params.controls_to_match} \
+      --min_controls_to_match=${params.min_controls_to_match} \
+      --match_age_tolerance=${params.match_age_tolerance} \
+      --match_on_age=${params.match_on_age} \
+      --match_on_sex=${params.match_on_sex} 
+    """
+  } 
 }
 
 }
@@ -516,7 +581,7 @@ if (params.omop2pheofile_mode == false){
   .fromPath(params.pheno_data)
   .ifEmpty { exit 1, "Cannot find phenotype file : ${params.pheno_data}" }
   .into{
-    ch_pheno_for_standardise;
+    ch_phenofile_with_id;
     ch_pheno_for_transform;
   }
 }
@@ -560,12 +625,10 @@ ch_input_pheno_transform = Channel.fromPath("${params.pheno_transform}")
 
 ch_rsid_cpra_table = Channel.fromPath("${params.rsid_cpra_table}")
 
-projectDir = workflow.projectDir
-
-ch_ancestry_inference_Rscript = Channel.fromPath("${projectDir}/bin/Ancestry_Inference.R", followLinks: false)
-ch_rsid_annotation_pyscript = Channel.fromPath("${projectDir}/bin/annotate_with_rsids.py", followLinks: false)
-ch_het_check_pyscript = Channel.fromPath("${projectDir}/bin/remove_het_outliers.py", followLinks: false)
-ch_hail_gwas_script = Channel.fromPath("${projectDir}/bin/hail_gwas.py", followLinks: false)
+ch_ancestry_inference_Rscript = Channel.fromPath("${project_dir}/bin/Ancestry_Inference.R", followLinks: false)
+ch_rsid_annotation_pyscript = Channel.fromPath("${project_dir}/bin/annotate_with_rsids.py", followLinks: false)
+ch_het_check_pyscript = Channel.fromPath("${project_dir}/bin/remove_het_outliers.py", followLinks: false)
+ch_hail_gwas_script = Channel.fromPath("${project_dir}/bin/hail_gwas.py", followLinks: false)
 
 // Fail early if violations in the parameters specified are detected
 if (!params.genotype_files_list && !params.input_folder_location ) {
@@ -655,8 +718,8 @@ process standardise_phenofile_and_get_samples {
 
   label 'gwas_default'
   input:
-  file(original_pheno_tsv) from ch_pheno_for_standardise
-  //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+  file(original_pheno_tsv) from ch_phenofile_with_id
+  each file('transform_pheno.R') from Channel.fromPath("${project_dir}/bin/transform_pheno.R")
 
   output:
   file("notransform.phe") into ch_standardised_pheno
@@ -693,7 +756,7 @@ process standardise_phenofile_and_get_samples {
       print \$0 \
     }' $original_pheno_tsv > dummmy_transform.tsv
 
-  Rscript '$baseDir/bin/transform_pheno.R' \
+  Rscript transform_pheno.R \
     --pheno $original_pheno_tsv \
     --transform dummmy_transform.tsv \
     --out_prefix ./
@@ -826,7 +889,7 @@ if (!params.hail) {
         --double-id \
         --threads ${task.cpus -1} \
         --memory ${task.memory.toMega() -200} \
-        --keep samples.txt
+        #--keep samples.txt
 
       rm -rf ${name}.*
 
@@ -1233,7 +1296,7 @@ process het_filter {
 
       input:
       set file('keep.tsv'), val(name), file('in.bed'), file('in.bim'), file('in.fam'), file('in.log') from ch_input_for_ancestry_inference
-      //file('Ancestry_Inference.R') from Channel.fromPath("${projectDir}/bin/Ancestry_Inference.R")
+      //file('Ancestry_Inference.R') from Channel.fromPath("${project_dir}/bin/Ancestry_Inference.R")
       set val(ref_name), file('ref.bed.xz'), file('ref.bim.xz'), file('ref.fam.xz') from ch_king_reference_data
 
       output:
@@ -1291,7 +1354,7 @@ process het_filter {
 
       input:
       set val(ancestry_group), file('in.tsv'), val(name), file('in.bed'), file('in.bim'), file('in.fam'), file('in.log') from ch_input_for_pca
-      //each file('pca_outliers.R') from Channel.fromPath("${projectDir}/bin/pca_outliers.R")
+      //each file('pca_outliers.R') from Channel.fromPath("${project_dir}/bin/pca_outliers.R")
 
       output:
       set val(ancestry_group), file('pca_results_final.eigenvec'), file('pca_results_final.eigenval') into ch_pca_results
@@ -1360,7 +1423,7 @@ process het_filter {
       input:
       file('original.pheno.tsv') from ch_pheno_for_transform
       file('transform.tsv') from ch_input_pheno_transform
-      //each file('transform_pheno.R') from Channel.fromPath("${projectDir}/bin/transform_pheno.R")
+      each file('transform_pheno.R') from Channel.fromPath("${project_dir}/bin/transform_pheno.R")
 
 
       output:
@@ -1368,7 +1431,7 @@ process het_filter {
 
       script:
       """
-      Rscript '$baseDir/bin/transform_pheno.R' --pheno original.pheno.tsv --transform transform.tsv --out_prefix ./
+      Rscript transform_pheno.R --pheno original.pheno.tsv --transform transform.tsv --out_prefix ./
       """
 
     }
@@ -2259,19 +2322,19 @@ process obtain_pipeline_metadata {
 
   input:
   val repository from ch_repository
-  val commit from ch_commitId
+  val commit from ch_commit_id
   val revision from ch_revision
-  val script_name from ch_scriptName
-  val script_file from ch_scriptFile
-  val project_dir from ch_projectDir
-  val launch_dir from ch_launchDir
-  val work_dir from ch_workDir
-  val user_name from ch_userName
-  val command_line from ch_commandLine
-  val config_files from ch_configFiles
+  val script_name from ch_script_name
+  val script_file from ch_script_file
+  val project_dir from ch_project_dir
+  val launch_dir from ch_launch_dir
+  val work_dir from ch_work_dir
+  val user_name from ch_user_name
+  val command_line from ch_command_line
+  val config_files from ch_config_files
   val profile from ch_profile
   val container from ch_container
-  val container_engine from ch_containerEngine
+  val container_engine from ch_container_engine
   val raci_owner from ch_raci_owner
   val domain_keywords from ch_domain_keywords
 
