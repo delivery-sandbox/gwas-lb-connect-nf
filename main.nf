@@ -490,7 +490,7 @@ process generate_phenofile {
 }
 
 if(!params.genotypic_linking_table){
-  ch_phenofile.set{ch_phenofile_with_id}
+  ch_phenofile.into{ch_phenofile_with_id; ch_phenofile_with_id_controls}
 }
 
 if(!!params.genotypic_linking_table){
