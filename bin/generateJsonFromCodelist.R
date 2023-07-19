@@ -119,7 +119,22 @@ fix_package_issues <- function(cohort_json){
 }
 ########################################################################
 
-codelist <- args$codelist
+# Generate Codelist dataframe
+codes_to_include <- unlist(strsplit(args$codes_to_include, ","))
+codes_to_exclude <- unlist(strsplit(args$codes_to_exclude, ","))
+codes_vocabulary <- args$codes_vocabulary
+pheno_label <- args$pheno_label
+codelist <- data.frame(Phenotype_Short = pheno_label,
+                       Criteria_Ontology = codes_vocabulary,
+                       Criteria = c(codes_to_include, codes_to_exclude),
+                       Is_Inclusion_Criteria = c(rep("TRUE", length(codes_to_include)),
+                                                 rep("FALSE", length(codes_to_exclude))),
+                       Is_Exclusion_Criteria = c(rep("FALSE", length(codes_to_include)),
+                                                 rep("TRUE", length(codes_to_exclude)))
+                      )
+codelist <- as.tibble(data.frame(lapply(codelist, as.character), stringsAsFactors=FALSE))
+                       
+
 connectionDetailsFull <- jsonlite::read_json(args$connection_details)
 vocabularyDatabaseSchema <- connectionDetailsFull$cdmDatabaseSchema
 include_descendants = as.logical(args$include_descendants)
@@ -133,7 +148,7 @@ connectionDetails <- discard(connectionDetailsFull, names(connectionDetailsFull)
 connectionDetails <- exec(DatabaseConnector::createConnectionDetails, !!! connectionDetails)
 connection <- connect(connectionDetails)
 
-input_file <- read_csv(codelist, col_types = cols(.default = "c")) %>%
+input_file <- codelist  %>%
   select(Phenotype_Short, Criteria_Ontology, Criteria, Is_Inclusion_Criteria, Is_Exclusion_Criteria) %>%
   mutate(across(c(Is_Inclusion_Criteria, Is_Exclusion_Criteria), as.logical))
 
