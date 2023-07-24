@@ -18,7 +18,7 @@ jobs:
 
       - name: Submit etl_omop2phenofile job to CloudOS using cloudos-cli
         id: etl_omop2phenofile
-        uses: lifebit-ai/action-cloudos-cli@0.3.0
+        uses: lifebit-ai/action-cloudos-cli@0.3.3
         with:
           apikey:  ${{secrets.CLOUDOS_TOKEN}}
           cloudos_url: 'https://staging.lifebit.ai'
