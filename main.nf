@@ -2350,7 +2350,7 @@ process obtain_pipeline_metadata {
   echo "Launch directory\t!{launch_dir}"           >> temp_report.tsv
   echo "Work directory\t!{work_dir}"               >> temp_report.tsv
   echo "User name\t!{user_name}"                   >> temp_report.tsv
-  echo "Command line\t!{command_line}"             >> temp_report.tsv
+  # echo "Command line\t!{command_line}"             >> temp_report.tsv
   echo "Configuration file(s)\t!{config_files}"    >> temp_report.tsv
   echo "Profile\t!{profile}"                       >> temp_report.tsv
   echo "Container\t!{container}"                   >> temp_report.tsv
