@@ -69,7 +69,9 @@ summary['User']                                        = workflow.userName
 summary['phenofile_name']                              = params.phenofile_name
 
 summary['covariate_specification']                     = params.covariate_specification
-summary['codelist_specification']                      = params.codelist_specification
+summary['codes_to_include']                            = params.codes_to_include
+summary['codes_to_exclude']                            = params.codes_to_exclude
+summary['codes_vocabulary']                            = params.codes_vocabulary
 summary['sql_specification']                           = params.sql_specification
 
 summary['include_descendants']                         = params.include_descendants
@@ -162,13 +164,13 @@ if (!params.covariate_specification) {
   \nPlease use --covariate_specification."
 }
 
-if (!params.codelist_specification && (!params.case_cohort_json || !params.control_cohort_json ) && !params.sql_specification) {
+if (!params.codes_to_include && (!params.case_cohort_json || !params.control_cohort_json ) && !params.sql_specification) {
   exit 1, "You have not supplied a codelist or case/control JSON definitions or a SQL query.\
-  \nPlease use --codelist_specification or --case_cohort_json and --control_cohort_json or --sql_specification."
+  \nPlease use --codes_to_include or --case_cohort_json and --control_cohort_json or --sql_specification."
 }
 
-if (params.codelist_specification && (params.case_cohort_json || params.control_cohort_json || params.sql_specification )) {
-  exit 1, "Supply either a codelist or JSON case/control definitions or SQL query"
+if (params.codes_to_include && (params.case_cohort_json || params.control_cohort_json || params.sql_specification )) {
+  exit 1, "Supply either codes_to_include or JSON case/control definitions or SQL query"
 }
 
 if (!params.database_cdm_schema) {
@@ -196,12 +198,6 @@ Channel
 Channel
     .value(params.phenofile_name)
     .set{ ch_phenofile_name}
-
-if (params.codelist_specification) {
-  Channel
-    .fromPath(params.codelist_specification)
-    .set { ch_codelist }
-}
 
 if (params.sql_specification) {
   Channel
@@ -338,7 +334,7 @@ process retrieve_parameters {
 }
 
 
-if (params.codelist_specification) {
+if (params.codes_to_include) {
 
   process generate_cohort_jsons_from_codelist {
     label 'omop_to_phenofile'
@@ -349,7 +345,6 @@ if (params.codelist_specification) {
 
     input:
     each file("generateCohortJsonFromCodelist.R") from ch_json_from_codelist_script
-    each file(codelist) from ch_codelist
     each file(db_jars) from ch_db_jars_for_codelist
     each file(connection_details) from ch_connection_details_for_codelist
 
@@ -360,7 +355,10 @@ if (params.codelist_specification) {
     shell:
     """
     Rscript generateCohortJsonFromCodelist.R \
-      --codelist=${codelist} \
+      --codes_to_include=${params.codes_to_include} \
+      --codes_to_exclude=${params.codes_to_exclude} \
+      --codes_vocabulary=${params.codes_vocabulary} \
+      --pheno_label=${params.pheno_label} \
       --include_descendants=${params.include_descendants} \
       --connection_details=${connection_details} \
       --db_jars=${db_jars}
@@ -2352,7 +2350,7 @@ process obtain_pipeline_metadata {
   echo "Launch directory\t!{launch_dir}"           >> temp_report.tsv
   echo "Work directory\t!{work_dir}"               >> temp_report.tsv
   echo "User name\t!{user_name}"                   >> temp_report.tsv
-  echo "Command line\t!{command_line}"             >> temp_report.tsv
+  # echo "Command line\t!{command_line}"             >> temp_report.tsv
   echo "Configuration file(s)\t!{config_files}"    >> temp_report.tsv
   echo "Profile\t!{profile}"                       >> temp_report.tsv
   echo "Container\t!{container}"                   >> temp_report.tsv
