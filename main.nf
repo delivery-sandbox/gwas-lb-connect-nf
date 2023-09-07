@@ -510,7 +510,7 @@ if(!!params.genotypic_linking_table){
     cp $genotype_files_list_stream genotype_files_list.csv
     """
 }
-}
+
 
 // if(!params.genotypic_linking_table){
 //   ch_covariates_file_for_linkage
