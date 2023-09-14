@@ -226,7 +226,7 @@ Channel
 if(params.genotypic_linking_table){
   Channel
     .fromPath(params.genotypic_linking_table)
-    .set { ch_linkage_file }
+    .set { ch_linkage_file_preprocess }
 
   Channel
     .value(params.original_id_col)
@@ -264,6 +264,48 @@ Channel
 Channel
   .fromPath("${project_dir}/bin/addGenotypicLinkageToPhenofile.R")
   .set { ch_add_genotypic_script }
+
+/*---------------------
+ Preprocess files 
+-----------------------*/
+if (params.preprocess_list_and_linking && params.genotype_format != 'bgen') {
+  exit 1, "The pipeline is currently only prepared to generate genotype_files_list from BGEN files. Please, use --genotype_files_list parameter instead"
+}
+
+if (params.preprocess_list_and_linking) {
+  process preprocess_linking_file {
+    label 'omop_to_phenofile'
+
+    input:
+      file(linking_table) from ch_linkage_file_preprocess
+
+    output:
+      file("genotype_files_list.csv") into ch_genotype_files_list
+      file("processed_linking_table.csv") into ch_linkage_file
+
+    script:
+    """
+      # Generating genotype_files_list
+      s3_location="{params.input_folder_location}"
+      echo chr,bgen,bgi_index,sample > genotype_files_list.csv
+      for chr in {1..22} X; do
+        echo -e "\${chr},\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen,\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen.bgi,\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.sample"
+      done >> genotype_files_list.csv
+
+      # Processing linkage file
+      awk -F'\t' '{print \$1 "," \$3}' $linking_table > temp_linking.csv
+      grep -v "LP3000448-DNA_E10" temp_linking.csv > temp_2_linking.csv
+      head -1 temp_2_linking.csv > header.csv
+      sed '1d' temp_2_linking.csv | sort | uniq > uniq_records.csv
+      cat header.csv uniq_records.csv > processed_linking_table.csv
+    """
+  }
+ch_genotype_files_list.splitCsv(skip:1)
+  .map { chr, bgen, bgi_index -> [file(bgen).simpleName, chr, file(bgen), file(bgi_index)] }
+  .set { ch_user_input_bgen }
+} else {
+ch_linkage_file = ch_linkage_file_preprocess
+}
 
 /*---------------------
   Retrieve parameters
@@ -603,7 +645,7 @@ def defineFormatList() {
 /*--------------------------------------------------
   Channel setup
 ---------------------------------------------------*/
-if (params.input_folder_location) {
+if (params.input_folder_location && !params.preprocess_list_and_linking) {
   Channel.fromPath("${params.input_folder_location}/**${params.file_pattern}*.{${params.file_suffix},${params.index_suffix}}")
        .map { it -> [ get_chromosome(file(it).simpleName.minus(".${params.index_suffix}").minus(".${params.file_suffix}")), "s3:/"+it] }
        .groupTuple(by:0)
@@ -659,9 +701,6 @@ else if (params.genotype_files_list && params.genotype_format == 'bgen') {
   .map { chr, bgen, bgi_index -> [file(bgen).simpleName, chr, file(bgen), file(bgi_index)] }
   .set { ch_user_input_bgen }
 
-  Channel
-  .fromPath(params.bgen_sample_file)
-  .set { ch_bgen_sample_file }
 }
 else if (params.genotype_files_list && params.genotype_format == 'pgen') {
     Channel
@@ -696,6 +735,12 @@ else if (params.genotype_files_list && params.genotype_format == 'dosage') {
       .map { chr, dosage, map, fam -> [file(dosage).baseName, chr, file(dosage), file(map), file(fam)] }
       .take( params.number_of_files_to_process )
       .set { ch_user_input_dosage }
+}
+
+if (params.bgen_sample_file) {
+  Channel
+  .fromPath(params.bgen_sample_file)
+  .set { ch_bgen_sample_file }
 }
 
 Channel
