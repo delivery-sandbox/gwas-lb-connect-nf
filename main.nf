@@ -289,7 +289,7 @@ if (params.preprocess_list_and_linking) {
       s3_location="${params.input_folder_location}"
       echo chr,bgen,bgi_index,sample > genotype_files_list.csv
       for chr in {1..22} X; do
-        echo -e "\${chr},\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen,\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen.bgi,\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.sample"
+        echo -e "\${chr},\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen,\${s3_location}gel_mainProgramme_aggV2_chr\${chr}_masked.bgen.bgi"
       done >> genotype_files_list.csv
 
       # Processing linkage file
