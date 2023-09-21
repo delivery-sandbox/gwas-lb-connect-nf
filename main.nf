@@ -481,13 +481,13 @@ process generate_cohorts_in_db_sql {
 
   shell:
   '''
-  echo """${query}""" >> query.sql
+  echo """!{query}""" >> query.sql
   echo 'test'
   Rscript generateCohortsFromSql.R \
-    --connection_details=${connection_details} \
-    --db_jars=${db_jars} \
+    --connection_details=!{connection_details} \
+    --db_jars=!{db_jars} \
     --query=query.sql \
-    --pheno_label=${params.pheno_label}
+    --pheno_label=!{params.pheno_label}
   '''
 }
 
