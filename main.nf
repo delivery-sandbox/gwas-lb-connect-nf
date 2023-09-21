@@ -35,7 +35,7 @@ def helpMessage() {
     --database_username         A database user name
     --database_password         A database password
     --database_dbms             A database dbms
-    --database_cdm_schema       A database cdm schema
+    --omop_database_schema_name       A database cdm schema
     --database_cohort_schema    A database cohort schema
 
     See docs/README.md for more details.
@@ -82,7 +82,7 @@ summary['min_controls_to_match']                        = params.min_controls_to
 summary['match_age_tolerance']                          = params.match_age_tolerance
 
 summary['database_dbms']                               = params.database_dbms
-summary['database_cdm_schema']                         = params.database_cdm_schema
+summary['omop_database_schema_name']                         = params.omop_database_schema_name
 summary['database_cohort_schema']                      = params.database_cohort_schema
 
 if (params.param_via_aws){
@@ -173,9 +173,9 @@ if (params.codes_to_include && (params.case_cohort_json || params.control_cohort
   exit 1, "Supply either codes_to_include or JSON case/control definitions or SQL query"
 }
 
-if (!params.database_cdm_schema) {
+if (!params.omop_database_schema_name) {
   exit 1, "You have not supplied the database cdm schema name.\
-  \nPlease use --database_cdm_schema."
+  \nPlease use --omop_database_schema_name."
 }
 
 if (!params.database_cohort_schema) {
@@ -366,7 +366,7 @@ process retrieve_parameters {
     string=$(echo $string'"server":"'\$database_host'",\n')
   fi
 
-  string+='"cdmDatabaseSchema":"!{params.database_cdm_schema}",\n'
+  string+='"cdmDatabaseSchema":"!{params.omop_database_schema_name}",\n'
   string+='"cohortDatabaseSchema":"!{params.database_cohort_schema}"\n'
   string+="\n}"
   echo -e $string > connection_details.json
