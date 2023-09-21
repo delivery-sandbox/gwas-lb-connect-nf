@@ -480,7 +480,7 @@ process generate_cohorts_in_db_sql {
   file("*sql") into (ch_cohort_sql)
 
   shell:
-  """
+  '''
   echo """${query}""" >> query.sql
   echo 'test'
   Rscript generateCohortsFromSql.R \
@@ -488,7 +488,7 @@ process generate_cohorts_in_db_sql {
     --db_jars=${db_jars} \
     --query=query.sql \
     --pheno_label=${params.pheno_label}
-  """
+  '''
 }
 
 }
