@@ -296,7 +296,7 @@ if (params.preprocess_list_and_linking) {
       awk -F'\t' '{print \$1 "," \$3}' $linking_table > temp_linking.csv
       grep -v "LP3000448-DNA_E10" temp_linking.csv > temp_2_linking.csv
       head -1 temp_2_linking.csv > header.csv
-      sed '1d' temp_2_linking.csv | sort | uniq > uniq_records.csv
+      sed '1d' temp_2_linking.csv | sort -u -t"," -k1,1 > uniq_records.csv
       cat header.csv uniq_records.csv > processed_linking_table.csv
     """
   }
