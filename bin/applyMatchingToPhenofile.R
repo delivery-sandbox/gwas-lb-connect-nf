@@ -56,8 +56,8 @@ pheno_label <- args$pheno_label
 controls_to_match <- as.integer(args$controls_to_match)
 min_controls_to_match <- as.integer(args$min_controls_to_match)
 match_age_tolerance <- as.integer(args$match_age_tolerance)
-match_sex <- !as.logical(args$match_on_age)
-match_age <- !as.logical(args$match_on_sex)
+match_sex <- as.logical(args$match_on_age)
+match_age <- as.logical(args$match_on_sex)
 
 if(! match_age){ phenofile$MATCH_AGE <- -1 }else{ phenofile$MATCH_AGE <- phenofile$AGE }
 

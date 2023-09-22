@@ -164,12 +164,12 @@ if (!params.covariate_specification) {
   \nPlease use --covariate_specification."
 }
 
-if (!params.codes_to_include && (!params.case_cohort_json || !params.control_cohort_json ) && !params.sql_specification) {
+if (!params.codes_to_include && (!params.case_cohort_json || !params.control_cohort_json ) && !params.sql_specification && !params.quantitative_outcome_concept_id) {
   exit 1, "You have not supplied a codelist or case/control JSON definitions or a SQL query.\
   \nPlease use --codes_to_include or --case_cohort_json and --control_cohort_json or --sql_specification."
 }
 
-if (params.codes_to_include && (params.case_cohort_json || params.control_cohort_json || params.sql_specification )) {
+if (params.codes_to_include && (params.case_cohort_json || params.control_cohort_json || params.sql_specification || params.quantitative_outcome_concept_id)) {
   exit 1, "Supply either codes_to_include or JSON case/control definitions or SQL query"
 }
 
@@ -221,7 +221,7 @@ Channel
 
 Channel
     .fromPath("${project_dir}/${params.path_to_db_jars}",  type: 'file', followLinks: false)
-    .into { ch_db_jars_for_cohorts; ch_db_jars_for_cohorts_sql; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist }
+    .into { ch_db_jars_for_cohorts; ch_db_jars_for_cohorts_sql; ch_db_jars_for_cohorts_quant; ch_db_jars_for_covariates ; ch_db_jars_for_json ; ch_db_jars_for_codelist }
 
 if(params.genotypic_linking_table){
   Channel
@@ -260,6 +260,10 @@ Channel
 Channel
   .fromPath("${project_dir}/bin/generatePhenofileFromCohorts.R")
   .set { ch_generate_covariates_script }
+
+Channel
+  .fromPath("${project_dir}/bin/generateCohortsFromQuantitativeConceptId.R")
+  .set { ch_generate_cohorts_quant }
 
 Channel
   .fromPath("${project_dir}/bin/addGenotypicLinkageToPhenofile.R")
@@ -320,7 +324,7 @@ process retrieve_parameters {
   label 'omop_to_phenofile'
   output:
   file ("*.log") into ch_retrieve_ssm_parameters_log
-  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_cohorts_sql, ch_connection_details_for_covariates, ch_connection_details_for_codelist )
+  file ("*.json") into ( ch_connection_details_for_json, ch_connection_details_for_cohorts, ch_connection_details_for_cohorts_sql, ch_connection_details_for_cohorts_quant, ch_connection_details_for_covariates, ch_connection_details_for_codelist )
 
   shell:
   '''
@@ -414,7 +418,7 @@ if (params.codes_to_include) {
   Using the cohort definition file(s), write cohort(s) in the OMOP database
 ----------------------------------------------------------------------------*/
 
-if(!params.sql_specification){
+if(!params.sql_specification & !params.quantitative_outcome_concept_id){
 
 process generate_cohorts_in_db {
   label 'omop_to_phenofile'
@@ -482,13 +486,47 @@ process generate_cohorts_in_db_sql {
   shell:
   '''
   echo """!{query}""" >> query.sql
-  echo 'test'
+
   Rscript generateCohortsFromSql.R \
     --connection_details=!{connection_details} \
     --db_jars=!{db_jars} \
     --query=query.sql \
-    --pheno_label=!{params.pheno_label}
+    --pheno_label=!{params.pheno_label} \
+    --create_controls=!{params.create_controls}
   '''
+}
+
+}
+
+if(params.quantitative_outcome_concept_id){
+
+process generate_cohorts_in_db_quantitative_concept_id {
+  label 'omop_to_phenofile'
+  publishDir "${params.outdir}", mode: "copy",
+   saveAs: { filename -> 
+      if (filename.endsWith('csv')) "cohorts/$filename"
+      else if  (filename.endsWith('sql')) "cohorts/sql/$filename"
+    }
+
+  input:
+  each file("generateCohortsFromQuantitativeConceptId.R") from ch_generate_cohorts_quant
+  each file(connection_details) from ch_connection_details_for_cohorts_quant
+  each file(db_jars) from ch_db_jars_for_cohorts_quant
+
+  output:
+  file("*txt") into (ch_cohort_table_name)
+  file("*csv") into (ch_cohort_counts)
+  file("*sql") into (ch_cohort_sql)
+
+  shell:
+  """
+  Rscript generateCohortsFromQuantitativeConceptId.R \
+    --connection_details=${connection_details} \
+    --db_jars=${db_jars} \
+    --quantitative_concept_id=${params.quantitative_outcome_concept_id} \
+    --quantitative_occurrence=${params.quantitative_outcome_occurrence} \
+    --pheno_label=!{params.pheno_label}
+  """
 }
 
 }
@@ -499,6 +537,7 @@ process generate_cohorts_in_db_sql {
 
 process generate_phenofile {
   label 'omop_to_phenofile'
+  label 'process_medium'
   publishDir "${params.outdir}/phenofile/", mode: "copy"
   if (params.s3_outdir) {
     publishDir "${params.s3_outdir}/${params.data_source}/${params.phenotype_group}/${params.phenotype_label}/${params.analysis_name}/$run_date/$job_id/phenofile/", mode: "copy"
@@ -525,7 +564,9 @@ process generate_phenofile {
     --covariate_spec=${covariate_specs} \
     --db_jars=${db_jars} \
     --pheno_label=${params.pheno_label} \
-    --phenofile_name=${phenofile_name}
+    --phenofile_name=${phenofile_name} \
+    --has_controls=${params.create_controls} \
+    --quantitative_outcome_concept_id=${params.quantitative_outcome_concept_id}
   """
 }
 
@@ -536,6 +577,7 @@ if(!params.genotypic_linking_table){
 if(!!params.genotypic_linking_table){
   process add_linkage {
     label 'omop_to_phenofile'
+    label 'process_medium'
     publishDir "${params.outdir}", mode: "copy",
     saveAs: { filename ->
          if (filename.endsWith('.csv')) "cohorts/$filename"
@@ -572,9 +614,10 @@ if(!!params.genotypic_linking_table){
   } 
 }
 
-if(!!params.controls_to_match){
+if(!!params.controls_to_match && !params.quantitative_outcome_concept_id){
   process match_controls {
     label 'omop_to_phenofile'
+    label 'process_medium'
     publishDir "${params.outdir}", mode: "copy",
     saveAs: { filename ->
          if (filename.endsWith('.csv')) "cohorts/$filename"

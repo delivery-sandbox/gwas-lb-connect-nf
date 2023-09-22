@@ -34,7 +34,7 @@ if("--help" %in% args | "help" %in% args | (length(args) == 0) ) {
     --help          This help message.
     
 	Usage:
-    generateCohortsFromSql.R --connection_details=connectionDetails.json
+    generateCohortsFromQuantitativeCohortId.R --connection_details=connectionDetails.json
     \n")
 
 	q(save="no")
@@ -50,7 +50,8 @@ rm(argsL)
 
 pheno_label <- args$pheno_label
 connectionDetailsFull <- jsonlite::read_json(args$connection_details)
-create_control_cohort <- as.logical(args$create_controls)
+quantitative_concept_id <- args$quantitative_concept_id
+quantitative_occurrence <- case_when(args$quantitative_occurrence == "first" ~ "min", args$quantitative_occurrence == "last" ~ "max", TRUE ~ "missing")
 
 ## Database Connection Jars
 Sys.setenv(DATABASECONNECTOR_JAR_FOLDER = getwd())
@@ -63,42 +64,35 @@ cohortTableName <- stringr::str_c("cohort_", stringi::stri_rand_strings(n=1, len
 cdmDatabaseSchema <- connectionDetailsFull$cdmDatabaseSchema
 cohortDatabaseSchema <- connectionDetailsFull$cohortDatabaseSchema
 
-## Read query and work out if it's a json
-full_query_text <- readChar(args$query,file.info(args$query)$size)
-
-## If the query starts with a bracket assume it is a json
-if(str_sub(full_query_text,nchar(full_query_text),nchar(full_query_text)) == "\n") full_query_text <- str_sub(full_query_text,1,nchar(full_query_text)-1)
-## If the query starts with a bracket assume it is a json
-if(str_sub(full_query_text,1,1) == "{") sql_query <- glue::glue(jsonlite::read_json(args$query)$sql)
-## Otherwise assume it is a raw SQL query (no guarantees this will work)
-if(str_sub(full_query_text,1,1) != "{") sql_query <- glue::glue(readSql(args$query))
-
 connection <- connect(connectionDetails)
 
-if(create_control_cohort) create_controls_query <- glue::glue(" UNION ALL SELECT 1 as cohort_definition_id, p.person_id FROM {cdmDatabaseSchema}.person p LEFT JOIN CTE on CTE.person_id = p.person_id WHERE CTE.person_id IS NULL ")
-if(!create_control_cohort) create_controls_query <- ""
+quantitative_domain <- dbGetQuery(connection, glue::glue("SELECT domain_id FROM {cdmDatabaseSchema}.concept WHERE concept_id = {quantitative_concept_id}"))
+
+if(nrow(quantitative_domain) == 0) stop("quantitative concept not found")
+if(!quantitative_domain$domain_id %in% c("Observation", "Measurement")) stop("quantitative concept must be an observation or a measurement")
+
+table_name <- tolower(quantitative_domain$domain_id)
 
 sql <- glue::glue("
 SET search_path TO {cdmDatabaseSchema};
 DROP TABLE IF EXISTS  {cohortDatabaseSchema}.{cohortTableName};
 CREATE TABLE {cohortDatabaseSchema}.{cohortTableName} AS
 WITH CTE AS (
-	{sql_query}
-),
-CTE2 AS (
 	SELECT person_id, max(observation_period_end_date) as max_observation_period_end_date, min(observation_period_start_date) as min_observation_period_start_date
 	FROM {cdmDatabaseSchema}.observation_period
 	GROUP BY person_id
 ),
-CTE3 AS (
-	SELECT 2 as cohort_definition_id, person_id FROM CTE
-  	{create_controls_query}
-)
-SELECT cohort_definition_id, CTE3.person_id as subject_id, max_observation_period_end_date as cohort_start_date, max_observation_period_end_date as cohort_end_date
-FROM CTE3
-LEFT JOIN CTE2 on CTE3.person_id = CTE2.person_id")
+CTE2 AS (
+	SELECT person_id, {quantitative_occurrence}({table_name}_date) as cohort_start_date
+	FROM {table_name} t
+	WHERE {table_name}_concept_id = {quantitative_concept_id}
+	GROUP BY person_id
 
-sql <- gsub("\\\\", "", sql)
+)
+SELECT 2 as cohort_definition_id, CTE2.person_id as subject_id, CTE2.cohort_start_date, CTE.max_observation_period_end_date as cohort_end_date
+FROM CTE2
+LEFT JOIN CTE on CTE.person_id = CTE2.person_id
+")
 
 writeSql(sql, str_c(cohortTableName,".sql"))
 
@@ -111,7 +105,7 @@ GROUP BY cohort_definition_id
 ")
 
 cohort_counts <- querySql(connection, sql, snakeCaseToCamelCase = T) %>%
-  mutate(cohortName = case_when(cohortId == 1 ~ str_c("controls_", pheno_label), cohortId == 2 ~ str_c("cases_", pheno_label)))
+  mutate(cohortName = pheno_label)
 
 write_csv(cohort_counts, "cohort_counts_full.csv")
 

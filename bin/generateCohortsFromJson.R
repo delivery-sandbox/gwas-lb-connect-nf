@@ -121,6 +121,28 @@ cohorts_generated <- generateCohortsFromJson(connectionDetails, cohortJsonFiles 
 
 connection <- connect(connectionDetails)
 
+if(control_index %in% c("observation_period_start", "observation_period_end")){
+
+	message("changing cohort_start_date")
+
+	sql <- glue::glue("
+		UPDATE {cohort_database_schema}.{cohort_table}
+		SET 
+			cohort_start_date = t2.cohort_start_date,
+			cohort_end_date = t2.cohort_end_date
+		FROM (
+			SELECT person_id, {control_index_min_max}(observation_period_end_date) as cohort_start_date, max(observation_period_end_date) as cohort_end_date FROM {cdm_database_schema}.observation_period GROUP BY person_id
+		) t2
+		WHERE {cohort_table}.subject_id = t2.person_id AND {cohort_table}.cohort_definition_id = 1;
+	", cohort_table = cohorts_generated$cohort_table,  
+		cohort_database_schema = connectionDetailsFull$cohortDatabaseSchema,
+		cdm_database_schema = connectionDetailsFull$cdmDatabaseSchema,	
+		control_index_min_max = case_when(control_index == "observation_period_start" ~ "min", TRUE ~ "max")	
+		)
+
+	dbExecute(connection, sql)
+}
+
 sql <- glue::glue("
 SELECT cohort_definition_id as cohort_id, count(distinct subject_id) as cohort_subjects
 FROM {cohort_database_schema}.{cohort_table} 

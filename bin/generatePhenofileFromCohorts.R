@@ -63,8 +63,8 @@ get_covariate_data <- function(connectionDetails, cohort_counts, cohort_table, c
     useDemographicsAge = T,
     useDemographicsGender = T,
     useDemographicsRace = T,
-    useConditionOccurrenceLongTerm = F,
-    useMeasurementValueLongTerm = F,
+    useConditionOccurrenceLongTerm = T,
+    useMeasurementValueLongTerm = T,
     longTermStartDays = -99999,
     endDays = 99999
   )
@@ -85,8 +85,6 @@ get_covariate_data <- function(connectionDetails, cohort_counts, cohort_table, c
     FROM {cohort_table} c LEFT JOIN {cdmDatabaseSchema}.PERSON p on c.SUBJECT_ID = p.PERSON_ID 
     LEFT JOIN CTE on c.SUBJECT_ID = CTE.PERSON_ID", cohort_table = cohort_table), snakeCaseToCamelCase = T)
 
-  write_csv(full_cohort, "test.csv")
-
   covariate_spec_ba <- keep(covariate_spec, ~.x$covariate == "biological_age")  
 
   if(length(covariate_spec_ba) >= 1) full_cohort <- mutate(full_cohort, biologicalAge = coalesce(biologicalAge, year(Sys.Date()) - yearOfBirth)) %>% rename(!! covariate_spec_ba[[1]]$covariate_name := biologicalAge) %>% select(-yearOfBirth)
@@ -96,10 +94,16 @@ get_covariate_data <- function(connectionDetails, cohort_counts, cohort_table, c
 
   all_covs <- map(covariate_spec, function(cov){
     
-    covariates_to_report <- filter(covariate_data$covariateRef, str_detect(covariateName, cov$covariate))
+    covariates_to_report <- covariate_data$covariateRef
+
+    if(is.null(cov$concept_ids) & !is.null(cov$covariate)){
+      covariates_to_report <- filter(covariates_to_report, str_detect(covariateName, cov$covariate))
+    }
     
-    if(!is.null(cov$concept_ids)) covariates_to_report <- filter(covariates_to_report, conceptId %in% cov$concept_ids)
-    
+    if(!is.null(cov$concept_ids)){
+      covariates_to_report <- filter(covariates_to_report, conceptId %in% cov$concept_ids) %>% slice(1)
+    }
+
     covariates <- filter(covariate_data$covariates , covariateId %in% !! covariates_to_report$covariateId) %>% collect
 
     if(!is.null(cov$valid_range)){
@@ -165,7 +169,7 @@ get_covariate_data <- function(connectionDetails, cohort_counts, cohort_table, c
     
   })
   
-  reduce(all_covs, left_join)
+  left_join(full_cohort,reduce(all_covs, left_join))
   
 }
 
@@ -183,6 +187,11 @@ cohortTable <- readLines(args$cohort_table)
 covariateSpec <- jsonlite::fromJSON(args$covariate_spec, simplifyVector = F)
 pheno_label <- args$pheno_label
 phenofile_name <- args$phenofile_name
+quantitative_outcome_concept_id <- args$quantitative_outcome_concept_id
+
+if(!is.na(as.integer(quantitative_outcome_concept_id))){
+  covariateSpec <- append(covariateSpec, list(list(covariate_name = pheno_label, concept_ids = as.integer(quantitative_outcome_concept_id), transformation = "value")))
+}
 
 if(nrow(cohortCounts) == 0) writeLines("Cohorts contain no patients", "empty_phenofile.tsv")
 
@@ -203,8 +212,40 @@ walk(str_c("DROP TABLE IF EXISTS ", str_c(cohortTable, c("","_inclusion_result",
 	~DatabaseConnector::dbExecute(connection, .x))
 DatabaseConnector::disconnect(connection)
 
-phenofile <- select(phenofile, `#FID` = personSourceValue, IID = personSourceValue, everything(), !! pheno_label := cohortDefinitionId, -subjectId) %>%    mutate(across(matches("SEX|GENDER"), ~case_when(.x == "MALE" ~ "1", .x == "FEMALE" ~ "2", TRUE ~ NA_character_)))
-
-write_tsv(phenofile, str_c(phenofile_name, ".phe"))
-
+if (!is.na(as.integer(quantitative_outcome_concept_id))) {
+  phenofile <- phenofile %>%
+    select(
+      `#FID` = personSourceValue,
+      IID = personSourceValue,
+      everything(),
+      -subjectId,
+      -cohortDefinitionId
+    ) %>%
+    mutate(across(
+      matches("SEX|GENDER"),
+      ~case_when(
+        .x == "MALE" ~ "1",
+        .x == "FEMALE" ~ "2",
+        TRUE ~ NA_character_
+      )
+    ))
+} else {
+  phenofile <- phenofile %>%
+    select(
+      `#FID` = personSourceValue,
+      IID = personSourceValue,
+      everything(),
+      !!pheno_label := cohortDefinitionId,
+      -subjectId
+    ) %>%
+    mutate(across(
+      matches("SEX|GENDER"),
+      ~case_when(
+        .x == "MALE" ~ "1",
+        .x == "FEMALE" ~ "2",
+        TRUE ~ NA_character_
+      )
+    ))
 }
+
+write_tsv(filter(phenofile, !is.na(!! sym(pheno_label))), str_c(phenofile_name, ".phe"))}
