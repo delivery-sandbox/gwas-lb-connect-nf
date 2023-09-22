@@ -50,11 +50,11 @@ iid_col <- args$original_ids_column_name
 replacement_col <- args$genotypic_ids_column_name 
 pheno_label <- args$pheno_label
 
-phenofile <- select(read_tsv(args$phenofile), -`#FID`)
+phenofile <- select(read_tsv(args$phenofile, col_types = cols(.default = "c")), -`#FID`)
 
-if(iid_col == "false") iid_col <- colnames(read_csv(args$linkage))[1]
-if(replacement_col == "false") linkage <- distinct(select(read_csv(args$linkage), IID = sym(iid_col), `#FID` = sym(iid_col), everything()))
-if(replacement_col != "false") linkage <- distinct(select(read_csv(args$linkage), IID = sym(iid_col), `#FID` = sym(replacement_col), everything()))
+if(iid_col == "false") iid_col <- colnames(read_csv(args$linkage, col_types = cols(.default = "c")))[1]
+if(replacement_col == "false") linkage <- distinct(select(read_csv(args$linkage, col_types = cols(.default = "c")), IID = sym(iid_col), `#FID` = sym(iid_col), everything()))
+if(replacement_col != "false") linkage <- distinct(select(read_csv(args$linkage, col_types = cols(.default = "c")), IID = sym(iid_col), `#FID` = sym(replacement_col), everything()))
     
 phenofile <- left_join(phenofile, linkage) %>%
   mutate(IID = `#FID`) %>% 
