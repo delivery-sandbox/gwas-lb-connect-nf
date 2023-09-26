@@ -101,8 +101,8 @@ for (i in 1:nrow(transform_df)) {
   # reorder cols (3rd column is always the phenotype to test)
   col_order <- colnames(r)[-(1:2)]
   col_order <- col_order[!(col_order %in% ignore)]
-  col_order <- col_order[col_order != r$test]
-  col_order <- c("#FID", "IID", r$test, col_order)
+  col_order <- col_order[col_order != r$DONOTUSETHISCOLUMNNAME]
+  col_order <- c("#FID", "IID", r$DONOTUSETHISCOLUMNNAME, col_order)
   
   out_df <- out_df[, col_order]
 

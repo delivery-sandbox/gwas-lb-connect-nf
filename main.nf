@@ -833,7 +833,7 @@ process standardise_phenofile_and_get_samples {
   awk -v covar_cols="\$covar_cols" -v pheno_col="\$pheno_col" '\
     BEGIN{FS=OFS="\\t"} \
     NR==1{ \
-      \$1="run_id"; \$2="test"; \
+      \$1="run_id"; \$2="DONOTUSETHISCOLUMNNAME"; \
       print \$0; \
       split(covar_cols,covs,","); for(i in covs){cols[covs[i]]}; \
       cols[pheno_col]; \
