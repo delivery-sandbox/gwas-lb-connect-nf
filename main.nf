@@ -57,6 +57,17 @@ if (params.debug) {
     summary['step_5'] = params.step_5
     summary['step_6'] = params.step_6
     summary['step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name'] = params.step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name
+    summary['step_1b_identify_genetic_associations_gwas_cloudos_workflow_name'] = params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name
+    summary['step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name
+    summary['step_2_identify_prioritised_genes_cloudos_workflow_name'] = params.step_2_identify_prioritised_genes_cloudos_workflow_name
+    summary['step_3_identify_causal_genes_and_pathways_cloudos_workflow_name'] = params.step_3_identify_causal_genes_and_pathways_cloudos_workflow_name
+    summary['step_4_identify_causal_proteins_cloudos_workflow_name'] = params.step_4_identify_causal_proteins_cloudos_workflow_name
+    summary['step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name
+    summary['step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name
+    summary['step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name
+    summary['step_6_identify_candidate_drugs_gsea_cloudos_workflow_name'] = params.step_6_identify_candidate_drugs_gsea_cloudos_workflow_name
+    summary['step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name'] = params.step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name
+
     summary['step_1a_identify_genetic_associations_phenofile_cloudos_job_name'] = params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name
     summary['step_1a_identify_genetic_associations_phenofile_cloudos_cost_limit'] = params.step_1a_identify_genetic_associations_phenofile_cloudos_cost_limit
     summary['step_1a_identify_genetic_associations_phenofile_cloudos_instance_disk_space'] = params.step_1a_identify_genetic_associations_phenofile_cloudos_instance_disk_space
@@ -94,7 +105,6 @@ if (params.debug) {
     summary['step_1a_identify_genetic_associations_phenofile_input_folder_location'] = params.step_1a_identify_genetic_associations_phenofile_input_folder_location
     summary['step_1a_identify_genetic_associations_phenofile_genotypic_linking_table'] = params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table
     summary['step_1a_identify_genetic_associations_phenofile_preprocess_list_and_linking'] = params.step_1a_identify_genetic_associations_phenofile_preprocess_list_and_linking
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_workflow_name'] = params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name
     summary['step_1b_identify_genetic_associations_gwas_cloudos_job_name'] = params.step_1b_identify_genetic_associations_gwas_cloudos_job_name
     summary['step_1b_identify_genetic_associations_gwas_cloudos_cost_limit'] = params.step_1b_identify_genetic_associations_gwas_cloudos_cost_limit
     summary['step_1b_identify_genetic_associations_gwas_cloudos_instance_disk_space'] = params.step_1b_identify_genetic_associations_gwas_cloudos_instance_disk_space
@@ -120,7 +130,6 @@ if (params.debug) {
     summary['step_1b_identify_genetic_associations_gwas_sex_check'] = params.step_1b_identify_genetic_associations_gwas_sex_check
     summary['step_1b_identify_genetic_associations_gwas_remove_related_samples'] = params.step_1b_identify_genetic_associations_gwas_remove_related_samples
     summary['step_1b_identify_genetic_associations_gwas_reference_data_bucket'] = params.step_1b_identify_genetic_associations_gwas_reference_data_bucket
-    summary['step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_job_name'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_job_name
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_cost_limit'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_cost_limit
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_instance_disk_space'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_instance_disk_space
@@ -142,7 +151,6 @@ if (params.debug) {
     summary['step_1c_identify_genetic_associations_harmonisation_convert_to_hail'] = params.step_1c_identify_genetic_associations_harmonisation_convert_to_hail
     summary['step_1c_identify_genetic_associations_harmonisation_dbsnp'] = params.step_1c_identify_genetic_associations_harmonisation_dbsnp
     summary['step_1c_identify_genetic_associations_harmonisation_reference_data_bucket'] = params.step_1c_identify_genetic_associations_harmonisation_reference_data_bucket
-    summary['step_2_identify_prioritised_genes_cloudos_workflow_name'] = params.step_2_identify_prioritised_genes_cloudos_workflow_name
     summary['step_2_identify_prioritised_genes_cloudos_job_name'] = params.step_2_identify_prioritised_genes_cloudos_job_name
     summary['step_2_identify_prioritised_genes_cloudos_cost_limit'] = params.step_2_identify_prioritised_genes_cloudos_cost_limit
     summary['step_2_identify_prioritised_genes_cloudos_instance_disk_space'] = params.step_2_identify_prioritised_genes_cloudos_instance_disk_space
@@ -158,7 +166,6 @@ if (params.debug) {
     summary['step_2_identify_prioritised_genes_variant_to_gene_plink_data'] = params.step_2_identify_prioritised_genes_variant_to_gene_plink_data
     summary['step_2_identify_prioritised_genes_variant_to_gene_besd_data'] = params.step_2_identify_prioritised_genes_variant_to_gene_besd_data
     summary['step_2_identify_prioritised_genes_variant_to_gene_diff_freq_prop'] = params.step_2_identify_prioritised_genes_variant_to_gene_diff_freq_prop
-    summary['step_3_identify_causal_genes_and_pathways_cloudos_workflow_name'] = params.step_3_identify_causal_genes_and_pathways_cloudos_workflow_name
     summary['step_3_identify_causal_genes_and_pathways_cloudos_job_name'] = params.step_3_identify_causal_genes_and_pathways_cloudos_job_name
     summary['step_3_identify_causal_genes_and_pathways_cloudos_cost_limit'] = params.step_3_identify_causal_genes_and_pathways_cloudos_cost_limit
     summary['step_3_identify_causal_genes_and_pathways_cloudos_instance_disk_space'] = params.step_3_identify_causal_genes_and_pathways_cloudos_instance_disk_space
@@ -171,7 +178,6 @@ if (params.debug) {
     summary['step_3_identify_causal_genes_and_pathways_joint_xqtl_besd_list'] = params.step_3_identify_causal_genes_and_pathways_joint_xqtl_besd_list
     summary['step_3_identify_causal_genes_and_pathways_joint_xqtl_git_tag'] = params.step_3_identify_causal_genes_and_pathways_joint_xqtl_git_tag
     summary['step_3_identify_causal_genes_and_pathways_joint_xqtl_reference_data_bucket'] = params.step_3_identify_causal_genes_and_pathways_joint_xqtl_reference_data_bucket
-    summary['step_4_identify_causal_proteins_cloudos_workflow_name'] = params.step_4_identify_causal_proteins_cloudos_workflow_name
     summary['step_4_identify_causal_proteins_cloudos_job_name'] = params.step_4_identify_causal_proteins_cloudos_job_name
     summary['step_4_identify_causal_proteins_cloudos_cost_limit'] = params.step_4_identify_causal_proteins_cloudos_cost_limit
     summary['step_4_identify_causal_proteins_cloudos_instance_disk_space'] = params.step_4_identify_causal_proteins_cloudos_instance_disk_space
@@ -182,7 +188,6 @@ if (params.debug) {
     summary['step_4_identify_causal_proteins_xqtlbiolinks_gwas_vcf'] = params.step_4_identify_causal_proteins_xqtlbiolinks_gwas_vcf
     summary['step_4_identify_causal_proteins_xqtlbiolinks_git_tag'] = params.step_4_identify_causal_proteins_xqtlbiolinks_git_tag
     summary['step_4_identify_causal_proteins_xqtlbiolinks_reference_data_bucket'] = params.step_4_identify_causal_proteins_xqtlbiolinks_reference_data_bucket
-    summary['step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name
     summary['step_5_identify_mechanism_of_action_liftover_cloudos_job_name'] = params.step_5_identify_mechanism_of_action_liftover_cloudos_job_name
     summary['step_5_identify_mechanism_of_action_liftover_cloudos_cost_limit'] = params.step_5_identify_mechanism_of_action_liftover_cloudos_cost_limit
     summary['step_5_identify_mechanism_of_action_liftover_cloudos_instance_disk_space'] = params.step_5_identify_mechanism_of_action_liftover_cloudos_instance_disk_space
@@ -201,7 +206,6 @@ if (params.debug) {
     summary['step_5_identify_mechanism_of_action_liftover_map_warn_pct'] = params.step_5_identify_mechanism_of_action_liftover_map_warn_pct
     summary['step_5_identify_mechanism_of_action_liftover_chunk_size'] = params.step_5_identify_mechanism_of_action_liftover_chunk_size
     summary['step_5_identify_mechanism_of_action_liftover_reference_data_bucket'] = params.step_5_identify_mechanism_of_action_liftover_reference_data_bucket
-    summary['step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name
     summary['step_5_identify_mechanism_of_action_finemapping_cloudos_job_name'] = params.step_5_identify_mechanism_of_action_finemapping_cloudos_job_name
     summary['step_5_identify_mechanism_of_action_finemapping_cloudos_cost_limit'] = params.step_5_identify_mechanism_of_action_finemapping_cloudos_cost_limit
     summary['step_5_identify_mechanism_of_action_finemapping_cloudos_instance_disk_space'] = params.step_5_identify_mechanism_of_action_finemapping_cloudos_instance_disk_space
@@ -216,7 +220,6 @@ if (params.debug) {
     summary['step_5_identify_mechanism_of_action_finemapping_polyfun_pvalue_thr'] = params.step_5_identify_mechanism_of_action_finemapping_polyfun_pvalue_thr
     summary['step_5_identify_mechanism_of_action_finemapping_reference_data_bucket'] = params.step_5_identify_mechanism_of_action_finemapping_reference_data_bucket
     summary['step_5_identify_mechanism_of_action_finemapping_liftover'] = params.step_5_identify_mechanism_of_action_finemapping_liftover
-    summary['step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name'] = params.step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name
     summary['step_5_identify_mechanism_of_action_cheers_cloudos_job_name'] = params.step_5_identify_mechanism_of_action_cheers_cloudos_job_name
     summary['step_5_identify_mechanism_of_action_cheers_cloudos_cost_limit'] = params.step_5_identify_mechanism_of_action_cheers_cloudos_cost_limit
     summary['step_5_identify_mechanism_of_action_cheers_cloudos_instance_disk_space'] = params.step_5_identify_mechanism_of_action_cheers_cloudos_instance_disk_space
@@ -231,7 +234,6 @@ if (params.debug) {
     summary['step_5_identify_mechanism_of_action_cheers_snp_list'] = params.step_5_identify_mechanism_of_action_cheers_snp_list
     summary['step_5_identify_mechanism_of_action_cheers_PIP'] = params.step_5_identify_mechanism_of_action_cheers_PIP
     summary['step_5_identify_mechanism_of_action_cheers_reference_data_bucket'] = params.step_5_identify_mechanism_of_action_cheers_reference_data_bucket
-    summary['step_6_identify_candidate_drugs_gsea_cloudos_workflow_name'] = params.step_6_identify_candidate_drugs_gsea_cloudos_workflow_name
     summary['step_6_identify_candidate_drugs_gsea_cloudos_job_name'] = params.step_6_identify_candidate_drugs_gsea_cloudos_job_name
     summary['step_6_identify_candidate_drugs_gsea_cloudos_cost_limit'] = params.step_6_identify_candidate_drugs_gsea_cloudos_cost_limit
     summary['step_6_identify_candidate_drugs_gsea_cloudos_instance_disk_space'] = params.step_6_identify_candidate_drugs_gsea_cloudos_instance_disk_space
@@ -250,7 +252,6 @@ if (params.debug) {
     summary['step_6_identify_candidate_drugs_gsea_gene_loc_file'] = params.step_6_identify_candidate_drugs_gsea_gene_loc_file
     summary['step_6_identify_candidate_drugs_gsea_set_anot_file'] = params.step_6_identify_candidate_drugs_gsea_set_anot_file
     summary['step_6_identify_candidate_drugs_gsea_reference_data_bucket'] = params.step_6_identify_candidate_drugs_gsea_reference_data_bucket
-    summary['step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name'] = params.step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name
     summary['step_6_identify_candidate_drugs_drug2ways_cloudos_job_name'] = params.step_6_identify_candidate_drugs_drug2ways_cloudos_job_name
     summary['step_6_identify_candidate_drugs_drug2ways_cloudos_cost_limit'] = params.step_6_identify_candidate_drugs_drug2ways_cloudos_cost_limit
     summary['step_6_identify_candidate_drugs_drug2ways_cloudos_instance_disk_space'] = params.step_6_identify_candidate_drugs_drug2ways_cloudos_instance_disk_space
