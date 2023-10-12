@@ -1,13 +1,40 @@
+# nextflow execution specific files
 .nextflow*
 work/
-data/
 results/
+
+# macOS data
 .DS_Store
-tests/
-testing/
-testing*
-*.pyc
-bin/testdata
-nextflow
 
+# gcloud service account key
+*-*.json
 
+# bioinformatics files
+*.fa
+*.fasta
+*.fq
+*.fastq
+*.fq.gz
+*.fastq.gz
+
+*.bam
+*.bai
+
+*.cram
+*.crai
+
+*.vcf
+*.vcf.gz
+*.bcf
+*.bcf.gz
+
+*.bgen
+*.pgen
+
+*.bed
+*.ped
+*.bim
+*.fam
+
+*.csv
+*.txt
