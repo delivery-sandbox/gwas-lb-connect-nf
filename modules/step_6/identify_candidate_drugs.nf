@@ -59,6 +59,7 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
     input:
     val gsea_genenames
     val project_name
+    val workspace_id
 
     output:
     env DRUG2WAYS_JOB_ID, emit: ch_drug2ways_job_id

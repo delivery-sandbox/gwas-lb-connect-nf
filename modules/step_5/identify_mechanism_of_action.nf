@@ -120,6 +120,7 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
     input:
     val finemapping_out
     val project_name
+    val workspace_id
 
     output:
     env CHEERS_JOB_ID, emit: ch_cheers_job_id
