@@ -4,6 +4,7 @@ process trigger_step_3_identify_causal_genes_and_pathways {
     input:
     val harmonised_gwas_vcf
     val project_name
+    val workspace_id
 
     output:
     env STEP_3_JOB_ID, emit: ch_step_3_job_id 
@@ -14,7 +15,7 @@ process trigger_step_3_identify_causal_genes_and_pathways {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_3_identify_causal_genes_and_pathways_cloudos_workflow_name}" \
         --git-tag "${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_git_tag}" \

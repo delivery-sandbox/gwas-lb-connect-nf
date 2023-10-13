@@ -5,6 +5,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
     val harmonised_gwas_vcf
     val project_name
     val project_bucket
+    val workspace_id
 
     output:
     env GSEA_OUT, emit: ch_gsea_genenames
@@ -17,7 +18,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_6_identify_candidate_drugs_gsea_cloudos_workflow_name}" \
         --git-tag "${params.step_6_identify_candidate_drugs_gsea_git_tag}" \

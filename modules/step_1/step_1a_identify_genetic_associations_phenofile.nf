@@ -4,11 +4,14 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
     input:
     val project_name
     val project_bucket
+    val workspace_id
+
 
     output:
     env PHENOFILE_OUT, emit: ch_phenofile_out
     env PHENOFILE_OUT_GENOFILE, emit: ch_genotype_files_list
-    env PHENOFILE_JOB_ID, emit: ch_step_1a_job_id 
+    env PHENOFILE_JOB_ID, emit: ch_step_1a_job_id
+
 
     script:
     if(params.step_1a_identify_genetic_associations_phenofile_sql_specification){
@@ -20,7 +23,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name}" \
         --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name}" \

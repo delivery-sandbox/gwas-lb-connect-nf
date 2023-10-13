@@ -6,6 +6,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
     val harmonised_gwas_vcf
     val project_name
     val project_bucket
+    val workspace_id
 
     output:
     env GWAS_HARMONISED_VCF_LIFTOVERED, emit: ch_liftovered_gwas_vcf
@@ -18,7 +19,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name}" \
         --job-name "${params.step_5_identify_mechanism_of_action_liftover_cloudos_job_name}" \

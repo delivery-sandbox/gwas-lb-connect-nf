@@ -4,6 +4,7 @@ process trigger_step_2_identify_prioritised_genes {
     input:
     val harmonised_gwas_vcf
     val project_name
+    val workspace_id
 
     output:
     env STEP_2_JOB_ID, emit: ch_step_2_job_id 
@@ -14,7 +15,7 @@ process trigger_step_2_identify_prioritised_genes {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_2_identify_prioritised_genes_cloudos_workflow_name}" \
         --git-tag "${params.step_2_identify_prioritised_genes_variant_to_gene_git_tag}" \

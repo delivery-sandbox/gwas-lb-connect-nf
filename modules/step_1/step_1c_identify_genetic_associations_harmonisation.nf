@@ -5,6 +5,7 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
     val gwas
     val project_name
     val project_bucket
+    val workspace_id
 
     output:
     env HARMONISATION_OUT, emit: ch_harmonisation_out
@@ -16,7 +17,7 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name}" \
         --job-name "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_job_name}" \

@@ -6,10 +6,13 @@ process trigger_step_1b_identify_genetic_associations_gwas {
     val genotype_files_list
     val project_name
     val project_bucket
+    val workspace_id
+
 
     output:
     env GWAS_OUT, emit: ch_gwas_out
     env GWAS_JOB_ID, emit: ch_step_1b_job_id 
+
 
     script:
     pheno_data = params.step_1b_identify_genetic_associations_gwas_pheno_data ? params.step_1b_identify_genetic_associations_gwas_pheno_data : phenofile
@@ -17,7 +20,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name}" \
         --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name}" \

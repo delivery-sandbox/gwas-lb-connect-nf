@@ -4,6 +4,7 @@ process trigger_step_4_identify_causal_proteins {
     input:
     val harmonised_gwas_vcf
     val project_name
+    val workspace_id
 
     output:
     env STEP_4_JOB_ID, emit: ch_step_4_job_id 
@@ -14,7 +15,7 @@ process trigger_step_4_identify_causal_proteins {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_4_identify_causal_proteins_cloudos_workflow_name}" \
         --git-tag "${params.step_4_identify_causal_proteins_xqtlbiolinks_git_tag}" \

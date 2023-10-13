@@ -335,6 +335,7 @@ workflow {
         trigger_step_1a_identify_genetic_associations_phenofile(
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         phenofile = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_phenofile_out
         genotype_files_list = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
@@ -346,6 +347,7 @@ workflow {
             genotype_files_list,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         gwas = trigger_step_1b_identify_genetic_associations_gwas.out.ch_gwas_out
         gwas_job_id = trigger_step_1b_identify_genetic_associations_gwas.out.ch_step_1b_job_id
@@ -355,6 +357,7 @@ workflow {
             gwas,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         harmonised = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_harmonisation_out
         harmonised_job_id = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_step_1c_job_id
@@ -369,6 +372,7 @@ workflow {
         trigger_step_2_identify_prioritised_genes(
             harmonised,
             configure_project.out.ch_project_name
+            configure_project.out.ch_workspace_id
         )
         step_2_job_id = trigger_step_2_identify_prioritised_genes.out.ch_step_2_job_id
     } else {
@@ -379,6 +383,7 @@ workflow {
         trigger_step_3_identify_causal_genes_and_pathways(
             harmonised,
             configure_project.out.ch_project_name
+            configure_project.out.ch_workspace_id
         )
         step_3_job_id = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_job_id
     } else {
@@ -389,6 +394,7 @@ workflow {
         trigger_step_4_identify_causal_proteins(
             harmonised,
             configure_project.out.ch_project_name
+            configure_project.out.ch_workspace_id
         )
         step_4_job_id = trigger_step_4_identify_causal_proteins.out.ch_step_4_job_id
     } else {
@@ -400,15 +406,18 @@ workflow {
             harmonised,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         trigger_step_5_identify_mechanism_of_action_finemapping(
             trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftovered_gwas_vcf,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         trigger_step_5_identify_mechanism_of_action_cheers(
             trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_out,
             configure_project.out.ch_project_name
+            configure_project.out.ch_workspace_id
         )
         liftover_job_id = trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftover_job_id
         finemapping_job_id = trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_job_id
@@ -424,10 +433,12 @@ workflow {
             harmonised,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket
+            configure_project.out.ch_workspace_id
         )
         trigger_step_6_identify_candidate_drugs_drug2ways(
             trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_genenames,
             configure_project.out.ch_project_name
+            configure_project.out.ch_workspace_id
         )
         gsea_job_id = trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_job_id
         drug2ways_job_id = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_drug2ways_job_id
