@@ -78,7 +78,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name}" \
         --git-tag "${params.step_5_identify_mechanism_of_action_finemapping_git_tag}" \
@@ -130,7 +130,7 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${ce_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name}" \
         --git-tag "${params.step_5_identify_mechanism_of_action_cheers_git_tag}" \

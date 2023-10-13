@@ -70,7 +70,7 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
         --apikey "${params.cloudos_api_key}" \
-        --workspace-id "${params.cloudos_workspace_id}" \
+        --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name}" \
         --git-tag "${params.step_6_identify_candidate_drugs_drug2ways_git_tag}" \
