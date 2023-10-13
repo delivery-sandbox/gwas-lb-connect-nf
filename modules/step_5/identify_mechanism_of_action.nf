@@ -66,6 +66,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
     val liftovered_gwas_vcf
     val project_name
     val project_bucket
+    val workspace_id
 
     output:
     env FINEMAPPING_OUT, emit: ch_finemapping_out
