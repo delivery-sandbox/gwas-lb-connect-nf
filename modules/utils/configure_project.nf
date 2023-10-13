@@ -16,6 +16,7 @@ process configure_project {
         --apikey "${params.cloudos_api_key}" \
         --workspace-id "${params.cloudos_workspace_id}" \
         --disable-ssl-verification
+    cat project_list.csv
     PROJECT_NAME=\$(grep -e "${project_id}" project_list.csv | cut -f2 -d",")
     """
 }
