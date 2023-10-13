@@ -11,7 +11,7 @@ process configure_project {
     final_project_bucket = workflow.workDir.subpath(0,8).toString()
     project_bucket = 's3://' + user_dir + '/' + final_project_bucket
     project_id = workflow.workDir.subpath(6,7).toString()
-    workspace_id = workflow.workDir.subpath(3,4).toString()
+    workspace_id = workflow.workDir.subpath("${params.workspace_id_subpath_start}","${params.workspace_id_subpath_end}").toString()
     """
     echo workspace_id ${workspace_id}
     cloudos project list \
