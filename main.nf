@@ -378,7 +378,7 @@ workflow {
     if (params.step_3) {
         trigger_step_3_identify_causal_genes_and_pathways(
             harmonised,
-            configure_project.out.ch_project_name   
+            configure_project.out.ch_project_name
         )
         step_3_job_id = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_job_id
     } else {
@@ -452,16 +452,16 @@ workflow {
 
 }
 
-// Trace report
-user_name = workflow.userName
+// // Trace report
+// user_name = workflow.userName
 
-if (user_name == "ubuntu" || user_name == "ec2-user") {
-    workflow.onComplete {
-        def trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-        trace_report = file("/home/${user_name}/nf-out/trace.txt")
-        trace_report.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
-    }
-}
+// if (user_name == "ubuntu" || user_name == "ec2-user") {
+//     workflow.onComplete {
+//         def trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+//         trace_report = file("/home/${user_name}/nf-out/trace.txt")
+//         trace_report.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
+//     }
+// }
 
 // ANSII string of Lifebit logo
 def lifebitLogo() {
