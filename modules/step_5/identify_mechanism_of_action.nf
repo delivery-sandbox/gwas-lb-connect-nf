@@ -41,7 +41,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
         --instance-disk ${params.step_5_identify_mechanism_of_action_liftover_cloudos_instance_disk_space} \
         --instance-type "${params.step_5_identify_mechanism_of_action_liftover_cloudos_instance_type}" \
         --batch \
-        --job-queue "${params.step_5_identify_mechanism_of_action_liftover_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_liftover.txt
 

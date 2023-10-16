@@ -25,7 +25,7 @@ process trigger_step_4_identify_causal_proteins {
         --resumable \
         --wait-time ${params.step_4_identify_causal_proteins_cloudos_wait_time} \
         --batch \
-        --job-queue "${params.step_4_identify_causal_proteins_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_step_4.txt
 

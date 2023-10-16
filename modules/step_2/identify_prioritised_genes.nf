@@ -30,7 +30,7 @@ process trigger_step_2_identify_prioritised_genes {
         --resumable \
         --wait-time ${params.step_2_identify_prioritised_genes_cloudos_wait_time} \
         --batch \
-        --job-queue "${params.step_2_identify_prioritised_genes_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_step_2.txt
 

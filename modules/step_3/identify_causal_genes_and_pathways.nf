@@ -28,7 +28,7 @@ process trigger_step_3_identify_causal_genes_and_pathways {
         --wait-time ${params.step_3_identify_causal_genes_and_pathways_cloudos_wait_time} \
         --instance-type "${params.step_3_identify_causal_genes_and_pathways_cloudos_instance_type}" \
         --batch \
-        --job-queue "${params.step_3_identify_causal_genes_and_pathways_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_step_3.txt
 

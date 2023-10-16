@@ -35,7 +35,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         -p "reference_data_bucket=${params.step_6_identify_candidate_drugs_gsea_reference_data_bucket}" \
         --resumable \
         --batch \
-        --job-queue "${params.step_6_identify_candidate_drugs_gsea_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_gsea.txt
 

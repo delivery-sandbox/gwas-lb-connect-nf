@@ -38,7 +38,7 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
         --resumable \
         --wait-time ${params.step_1c_identify_genetic_associations_harmonisation_cloudos_wait_time} \
         --batch \
-        --job-queue "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_harmonisation.txt
 
