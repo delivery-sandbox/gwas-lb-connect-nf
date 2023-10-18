@@ -82,6 +82,7 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
         -p "sources=${params.step_6_identify_candidate_drugs_drug2ways_sources}" \
         -p "lmax=${params.step_6_identify_candidate_drugs_drug2ways_lmax}" \
         -p "reference_data_bucket=${params.step_6_identify_candidate_drugs_drug2ways_reference_data_bucket}" \
+        -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --batch \
         --job-queue "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_queue_name}" \

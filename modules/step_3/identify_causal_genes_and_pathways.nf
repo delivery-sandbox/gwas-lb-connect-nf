@@ -24,6 +24,7 @@ process trigger_step_3_identify_causal_genes_and_pathways {
         -p "ld_ref_data=${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_ld_ref_data}" \
         -p "besd_list=${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_besd_list}" \
         -p "reference_data_bucket=${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_reference_data_bucket}" \
+        -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --wait-time ${params.step_3_identify_causal_genes_and_pathways_cloudos_wait_time} \
         --instance-type "${params.step_3_identify_causal_genes_and_pathways_cloudos_instance_type}" \

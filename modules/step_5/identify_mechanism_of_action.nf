@@ -141,6 +141,7 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
         -p "snp_list=$finemapping_out" \
         -p "PIP=${params.step_5_identify_mechanism_of_action_cheers_PIP}" \
         -p "reference_data_bucket=${params.step_5_identify_mechanism_of_action_cheers_reference_data_bucket}" \
+        -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --batch \
         --job-queue "${params.step_5_identify_mechanism_of_action_cheers_cloudos_queue_name}" \

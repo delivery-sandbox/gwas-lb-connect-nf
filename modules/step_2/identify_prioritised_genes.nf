@@ -27,6 +27,7 @@ process trigger_step_2_identify_prioritised_genes {
         -p "plink_data=${params.step_2_identify_prioritised_genes_variant_to_gene_plink_data}" \
         -p "besd_data=${params.step_2_identify_prioritised_genes_variant_to_gene_besd_data}" \
         -p "diff_freq_prop=${params.step_2_identify_prioritised_genes_variant_to_gene_diff_freq_prop}" \
+        -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --wait-time ${params.step_2_identify_prioritised_genes_cloudos_wait_time} \
         --batch \

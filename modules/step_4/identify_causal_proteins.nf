@@ -22,6 +22,7 @@ process trigger_step_4_identify_causal_proteins {
         --job-name "${params.step_4_identify_causal_proteins_cloudos_job_name}" \
         -p "gwas_vcf=$harmonised_data" \
         -p "reference_data_bucket=${params.step_4_identify_causal_proteins_xqtlbiolinks_reference_data_bucket}" \
+        -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --wait-time ${params.step_4_identify_causal_proteins_cloudos_wait_time} \
         --batch \
