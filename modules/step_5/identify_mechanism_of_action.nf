@@ -96,7 +96,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
         --resumable \
         --wait-time ${params.step_5_identify_mechanism_of_action_finemapping_cloudos_wait_time} \
         --batch \
-        --job-queue "${params.step_5_identify_mechanism_of_action_finemapping_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_finemapping.txt
 
@@ -144,7 +144,7 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
         -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --batch \
-        --job-queue "${params.step_5_identify_mechanism_of_action_cheers_cloudos_queue_name}" \
+        --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
         --wait-completion | tee job_status_cheers.txt
 
