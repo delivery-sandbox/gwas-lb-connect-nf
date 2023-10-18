@@ -37,6 +37,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         --batch \
         --job-queue "${params.cloudos_queue_name}" \
         --disable-ssl-verification \
+        --wait-time 20000 \
         --wait-completion | tee job_status_gsea.txt
 
     # Check job status to fail early
