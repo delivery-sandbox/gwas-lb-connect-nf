@@ -43,7 +43,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         -p "remove_related_samples=${params.step_1b_identify_genetic_associations_gwas_remove_related_samples}" \
         -p "reference_data_bucket=${params.step_1b_identify_genetic_associations_gwas_reference_data_bucket}" \
         --resumable \
-        --cost-limit ${params.step_1b_identify_genetic_associations_gwas_cloudos_cost_limit} \
+        --cost-limit 300.0 \
         --wait-time ${params.step_1b_identify_genetic_associations_gwas_cloudos_wait_time} \
         --batch \
         --job-queue "${params.cloudos_queue_name}" \
