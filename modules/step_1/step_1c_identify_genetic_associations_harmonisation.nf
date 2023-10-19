@@ -20,7 +20,7 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_workflow_name}" \
-        --job-name "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_job_name}" \
+        --job-name "${params.step_1c_identify_genetic_associations_harmonisation_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "input=$gwas_data" \
         -p "gwas_source=${params.step_1c_identify_genetic_associations_harmonisation_gwas_source}" \
         -p "input_type=${params.step_1c_identify_genetic_associations_harmonisation_input_type}" \

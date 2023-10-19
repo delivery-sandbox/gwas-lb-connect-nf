@@ -23,7 +23,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name}" \
-        --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name}" \
+        --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "genotype_format=${params.step_1b_identify_genetic_associations_gwas_genotype_format}" \
         -p "genotype_files_list=$genotype_files_list" \
         -p "genome_build=${params.step_1b_identify_genetic_associations_gwas_genome_build}" \
@@ -35,7 +35,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         -p "regenie=${params.step_1b_identify_genetic_associations_gwas_regenie}" \
         -p "run_pca=${params.step_1b_identify_genetic_associations_gwas_run_pca}" \
         -p "pheno_data=$pheno_data" \
-        -p "phenotype_colname=${params.step_1b_identify_genetic_associations_gwas_phenotype_colname}" \
+        -p "phenotype_colname=${params.step_1b_identify_genetic_associations_gwas_phenotype_colname.replaceAll( / /, '_')}" \
         -p "mind_threshold=${params.step_1b_identify_genetic_associations_gwas_mind_threshold}" \
         -p "miss=${params.step_1b_identify_genetic_associations_gwas_miss}" \
         -p "miss_test_p_threshold=${params.step_1b_identify_genetic_associations_gwas_miss_test_p_threshold}" \
@@ -43,7 +43,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         -p "remove_related_samples=${params.step_1b_identify_genetic_associations_gwas_remove_related_samples}" \
         -p "reference_data_bucket=${params.step_1b_identify_genetic_associations_gwas_reference_data_bucket}" \
         --resumable \
-        --cost-limit 300.0 \
+        --cost-limit ${params.step_1b_identify_genetic_associations_gwas_cloudos_cost_limit} \
         --wait-time ${params.step_1b_identify_genetic_associations_gwas_cloudos_wait_time} \
         --batch \
         --job-queue "${params.cloudos_queue_name}" \

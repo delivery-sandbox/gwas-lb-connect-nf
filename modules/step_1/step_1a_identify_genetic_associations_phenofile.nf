@@ -26,7 +26,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name}" \
-        --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name}" \
+        --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name.replaceAll( / /, '_')}" \
         --git-tag "adds_linking_table_creation" \
         -p "covariate_specification=${params.step_1a_identify_genetic_associations_phenofile_covariate_specification}" \
         -p "database_host=${params.step_1a_identify_genetic_associations_phenofile_database_host}" \
@@ -41,7 +41,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         -p "genotypic_linking_table=${params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table}" \
         -p "genotypic_id_col=${params.step_1a_identify_genetic_associations_phenofile_genotypic_id_col}" \
         -p "original_id_col=${params.step_1a_identify_genetic_associations_phenofile_original_id_col}" \
-        -p "pheno_label=${params.step_1a_identify_genetic_associations_phenofile_pheno_label}" \
+        -p "pheno_label=${params.step_1a_identify_genetic_associations_phenofile_pheno_label.replaceAll( / /, '_')}" \
         -p "phenofile_name=${params.step_1a_identify_genetic_associations_phenofile_phenofile_name}" \
         -p "include_descendants=${params.step_1a_identify_genetic_associations_phenofile_include_descendants}" \
         -p "quantitative_outcome_concept_id=${params.step_1a_identify_genetic_associations_phenofile_quantitative_outcome_concept_id}" \

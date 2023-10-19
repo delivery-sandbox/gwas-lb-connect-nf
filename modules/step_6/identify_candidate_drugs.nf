@@ -22,7 +22,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         --project-name "${project_name}" \
         --workflow-name "${params.step_6_identify_candidate_drugs_gsea_cloudos_workflow_name}" \
         --git-tag "${params.step_6_identify_candidate_drugs_gsea_git_tag}" \
-        --job-name "${params.step_6_identify_candidate_drugs_gsea_cloudos_job_name}" \
+        --job-name "${params.step_6_identify_candidate_drugs_gsea_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "summary_stats=$harmonised_data" \
         -p "snp_col_name=${params.step_6_identify_candidate_drugs_gsea_snp_col_name}" \
         -p "pval_col_name=${params.step_6_identify_candidate_drugs_gsea_pval_col_name}" \
@@ -75,7 +75,7 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
         --project-name "${project_name}" \
         --workflow-name "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_workflow_name}" \
         --git-tag "${params.step_6_identify_candidate_drugs_drug2ways_git_tag}" \
-        --job-name "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_job_name}" \
+        --job-name "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "targets=$gsea_genenames" \
         -p "omnipathr_container=${params.step_6_identify_candidate_drugs_drug2ways_omnipathr_container}" \
         -p "get_drugs=${params.step_6_identify_candidate_drugs_drug2ways_get_drugs}" \

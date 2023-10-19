@@ -19,7 +19,7 @@ process trigger_step_4_identify_causal_proteins {
         --project-name "${project_name}" \
         --workflow-name "${params.step_4_identify_causal_proteins_cloudos_workflow_name}" \
         --git-tag "${params.step_4_identify_causal_proteins_xqtlbiolinks_git_tag}" \
-        --job-name "${params.step_4_identify_causal_proteins_cloudos_job_name}" \
+        --job-name "${params.step_4_identify_causal_proteins_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "gwas_vcf=$harmonised_data" \
         -p "reference_data_bucket=${params.step_4_identify_causal_proteins_xqtlbiolinks_reference_data_bucket}" \
         -p "errorStrategy=${params.module_strategy}" \

@@ -19,7 +19,7 @@ process trigger_step_3_identify_causal_genes_and_pathways {
         --project-name "${project_name}" \
         --workflow-name "${params.step_3_identify_causal_genes_and_pathways_cloudos_workflow_name}" \
         --git-tag "${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_git_tag}" \
-        --job-name "${params.step_3_identify_causal_genes_and_pathways_cloudos_job_name}" \
+        --job-name "${params.step_3_identify_causal_genes_and_pathways_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "gwas_vcf=$harmonised_data" \
         -p "ld_ref_data=${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_ld_ref_data}" \
         -p "besd_list=${params.step_3_identify_causal_genes_and_pathways_joint_xqtl_besd_list}" \

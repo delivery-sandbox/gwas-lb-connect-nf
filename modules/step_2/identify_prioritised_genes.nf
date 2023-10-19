@@ -19,7 +19,7 @@ process trigger_step_2_identify_prioritised_genes {
         --project-name "${project_name}" \
         --workflow-name "${params.step_2_identify_prioritised_genes_cloudos_workflow_name}" \
         --git-tag "${params.step_2_identify_prioritised_genes_variant_to_gene_git_tag}" \
-        --job-name "${params.step_2_identify_prioritised_genes_cloudos_job_name}" \
+        --job-name "${params.step_2_identify_prioritised_genes_cloudos_job_name.replaceAll( / /, '_')}" \
         -p "gcta_smr=${params.step_2_identify_prioritised_genes_variant_to_gene_gcta_smr}" \
         -p "closest_genes=${params.step_2_identify_prioritised_genes_variant_to_gene_closest_genes}" \
         -p "metaxcan=${params.step_2_identify_prioritised_genes_variant_to_gene_metaxcan}" \
