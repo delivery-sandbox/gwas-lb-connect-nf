@@ -1,10 +1,10 @@
 #!/usr/bin/env nextflow
 /*
 ====================================================================================================
-|                        drug-discovery-protocol-orchestrator-nf                                   |
+|                        end-to-end-target-identification                                          |
 ====================================================================================================
 |    #### Homepage / Documentation                                                                 |
-|    https://github.com/lifebit-ai/drug-discovery-protocol-orchestrator-nf/blob/dev/docs/README.md |
+|    https://github.com/lifebit-ai/end-to-end-target-identification/blob/dev/docs/README.md        |
 ----------------------------------------------------------------------------------------------------
 */
 
@@ -315,15 +315,20 @@ if (params.help) {
 }
 
 // check mandatory params
-if ([params.cloudos_api_key as Boolean,
-    params.step_1a_identify_genetic_associations_phenofile_sql_specification as Boolean,
-    params.step_1a_identify_genetic_associations_phenofile_database_cdm_schema as Boolean,
-    params.step_1a_identify_genetic_associations_phenofile_pheno_label as Boolean,].count(true) < 4){
+if (!params.cloudos_api_key){
+    exit 1, "Missing mandatory option to run analysis: '--cloudos_api_key'"
+}
 
-    exit 1, "Missing mandatory options to run analysis: --cloudos_api_key, " + \
-            "--step_1a_identify_genetic_associations_phenofile_sql_specification, " + \
-            "--step_1a_identify_genetic_associations_phenofile_database_cdm_schema, " + \
-            " --step_1a_identify_genetic_associations_phenofile_pheno_label"
+if (!params.step_1a_identify_genetic_associations_phenofile_sql_specification){
+    exit 1, "Missing mandatory option to run analysis: '--step_1a_identify_genetic_associations_phenofile_sql_specification'"
+}
+
+if (!params.step_1a_identify_genetic_associations_phenofile_database_cdm_schema){
+    exit 1, "Missing mandatory option to run analysis: '--step_1a_identify_genetic_associations_phenofile_database_cdm_schema'"
+}
+
+if (!params.step_1a_identify_genetic_associations_phenofile_pheno_label){
+    exit 1, "Missing mandatory option to run analysis: '--step_1a_identify_genetic_associations_phenofile_pheno_label'"
 }
 
 workflow {
