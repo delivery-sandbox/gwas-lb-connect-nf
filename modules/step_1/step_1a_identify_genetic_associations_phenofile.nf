@@ -37,7 +37,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         -p "database_cohort_schema=${params.step_1a_identify_genetic_associations_phenofile_database_cohort_schema}" \
         -p "database_dbms=${params.step_1a_identify_genetic_associations_phenofile_database_dbms}" \
         -p "database_name=${params.step_1a_identify_genetic_associations_phenofile_database_name}" \
-        -p '$specification' \
+        -p "$specification" \
         -p "genotypic_linking_table=${params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table}" \
         -p "genotypic_id_col=${params.step_1a_identify_genetic_associations_phenofile_genotypic_id_col}" \
         -p "original_id_col=${params.step_1a_identify_genetic_associations_phenofile_original_id_col}" \
