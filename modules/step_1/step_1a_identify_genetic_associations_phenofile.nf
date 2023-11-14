@@ -28,7 +28,6 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         --workflow-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name}" \
         --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         --git-tag "adds_linking_table_creation" \
-        -p "covariate_specification=${params.step_1a_identify_genetic_associations_phenofile_covariate_specification}" \
         -p "database_cdm_schema=${params.step_1a_identify_genetic_associations_phenofile_database_cdm_schema}" \
         -p "$specification" \
         -p "genotypic_linking_table=${params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table}" \
