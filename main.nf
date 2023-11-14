@@ -338,7 +338,11 @@ workflow {
             configure_project.out.ch_workspace_id
         )
         phenofile = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_phenofile_out
-        genotype_files_list = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
+        if (params.collect_genotypes_from_step_1a) {
+            genotype_files_list = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
+        } else {
+            genptype_files_list = "${params.step_1b_identify_genetic_associations_gwas_genotype_files_list}"
+        }
         pheno_job_id = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_step_1a_job_id
 
         // run gwas (regenie)
