@@ -16,6 +16,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
 
     script:
     pheno_data = params.step_1b_identify_genetic_associations_gwas_pheno_data ? params.step_1b_identify_genetic_associations_gwas_pheno_data : phenofile
+    geno_data = params.collect_genotypes_from_step_1a ? genotype_files_list : params.step_1b_identify_genetic_associations_gwas_genotype_files_list
     """
     cloudos job run \
         --cloudos-url "${params.cloudos_url}" \
@@ -25,7 +26,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         --workflow-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name}" \
         --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "genotype_format=${params.step_1b_identify_genetic_associations_gwas_genotype_format}" \
-        -p "genotype_files_list=$genotype_files_list" \
+        -p "genotype_files_list=$geno_data" \
         -p "genome_build=${params.step_1b_identify_genetic_associations_gwas_genome_build}" \
         -p "annotate_with_rsids=${params.step_1b_identify_genetic_associations_gwas_annotate_with_rsids}" \
         -p "king_reference_data=${params.step_1b_identify_genetic_associations_gwas_king_reference_data}" \
