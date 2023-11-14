@@ -23,7 +23,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_workflow_name}" \
-        --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name.replaceAll( / /, '_')}" \
+        --job-name "${params.step_1b_identify_genetic_associations_gwas_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "genotype_format=${params.step_1b_identify_genetic_associations_gwas_genotype_format}" \
         -p "genotype_files_list=$genotype_files_list" \
         -p "genome_build=${params.step_1b_identify_genetic_associations_gwas_genome_build}" \

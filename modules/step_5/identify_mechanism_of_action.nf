@@ -22,7 +22,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_liftover_cloudos_workflow_name}" \
-        --job-name "${params.step_5_identify_mechanism_of_action_liftover_cloudos_job_name.replaceAll( / /, '_')}" \
+        --job-name "${params.step_5_identify_mechanism_of_action_liftover_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "vcf=$harmonised_data" \
         -p "liftover_from_to=GRCh38->GRCh37" \
         -p "crossmap_preprocess=${params.step_5_identify_mechanism_of_action_liftover_crossmap_preprocess}" \
@@ -82,7 +82,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_finemapping_cloudos_workflow_name}" \
         --git-tag "${params.step_5_identify_mechanism_of_action_finemapping_git_tag}" \
-        --job-name "${params.step_5_identify_mechanism_of_action_finemapping_cloudos_job_name.replaceAll( / /, '_')}" \
+        --job-name "${params.step_5_identify_mechanism_of_action_finemapping_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "gwas_vcf=$liftovered_gwas_vcf" \
         -p "ld_score_weights_annotation_files=${params.step_5_identify_mechanism_of_action_finemapping_ld_score_weights_annotation_files}" \
         -p "polyfun=${params.step_5_identify_mechanism_of_action_finemapping_polyfun}" \
@@ -134,7 +134,7 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
         --project-name "${project_name}" \
         --workflow-name "${params.step_5_identify_mechanism_of_action_cheers_cloudos_workflow_name}" \
         --git-tag "${params.step_5_identify_mechanism_of_action_cheers_git_tag}" \
-        --job-name "${params.step_5_identify_mechanism_of_action_cheers_cloudos_job_name.replaceAll( / /, '_')}" \
+        --job-name "${params.step_5_identify_mechanism_of_action_cheers_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "trait_name=${params.step_5_identify_mechanism_of_action_cheers_trait_name}" \
         -p "input_snp_type=${params.step_5_identify_mechanism_of_action_cheers_input_snp_type}" \
         -p "input_peaks=${params.step_5_identify_mechanism_of_action_cheers_input_peaks}" \

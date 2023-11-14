@@ -26,17 +26,10 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         --workspace-id "${workspace_id}" \
         --project-name "${project_name}" \
         --workflow-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_workflow_name}" \
-        --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name.replaceAll( / /, '_')}" \
+        --job-name "${params.step_1a_identify_genetic_associations_phenofile_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         --git-tag "adds_linking_table_creation" \
         -p "covariate_specification=${params.step_1a_identify_genetic_associations_phenofile_covariate_specification}" \
-        -p "database_host=${params.step_1a_identify_genetic_associations_phenofile_database_host}" \
-        -p "database_port=${params.step_1a_identify_genetic_associations_phenofile_database_port}" \
-        -p "database_username=${params.step_1a_identify_genetic_associations_phenofile_database_username}" \
-        -p "database_password=${params.step_1a_identify_genetic_associations_phenofile_database_password}" \
         -p "database_cdm_schema=${params.step_1a_identify_genetic_associations_phenofile_database_cdm_schema}" \
-        -p "database_cohort_schema=${params.step_1a_identify_genetic_associations_phenofile_database_cohort_schema}" \
-        -p "database_dbms=${params.step_1a_identify_genetic_associations_phenofile_database_dbms}" \
-        -p "database_name=${params.step_1a_identify_genetic_associations_phenofile_database_name}" \
         -p "$specification" \
         -p "genotypic_linking_table=${params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table}" \
         -p "genotypic_id_col=${params.step_1a_identify_genetic_associations_phenofile_genotypic_id_col}" \
@@ -57,6 +50,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         -p "match_on_sex=${params.step_1a_identify_genetic_associations_phenofile_match_on_sex}" \
         -p "input_folder_location=${params.step_1a_identify_genetic_associations_phenofile_input_folder_location}" \
         -p "preprocess_list_and_linking=${params.step_1a_identify_genetic_associations_phenofile_preprocess_list_and_linking}" \
+        --nextflow-profile "${params.step_1a_identify_genetic_associations_phenofile_profile}" \
         --resumable \
         --batch \
         --job-queue "${params.cloudos_queue_name}" \
