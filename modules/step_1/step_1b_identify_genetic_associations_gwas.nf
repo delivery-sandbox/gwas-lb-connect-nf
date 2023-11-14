@@ -43,6 +43,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         -p "sex_check=${params.step_1b_identify_genetic_associations_gwas_sex_check}" \
         -p "remove_related_samples=${params.step_1b_identify_genetic_associations_gwas_remove_related_samples}" \
         -p "reference_data_bucket=${params.step_1b_identify_genetic_associations_gwas_reference_data_bucket}" \
+        --git-commit "${params.step_1b_identify_genetic_associations_gwas_git_commit}" \
         --resumable \
         --cost-limit ${params.step_1b_identify_genetic_associations_gwas_cloudos_cost_limit} \
         --wait-time ${params.step_1b_identify_genetic_associations_gwas_cloudos_wait_time} \
