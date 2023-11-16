@@ -5,6 +5,7 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
 
     output:

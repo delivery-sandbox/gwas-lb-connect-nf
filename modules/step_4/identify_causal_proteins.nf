@@ -4,10 +4,13 @@ process trigger_step_4_identify_causal_proteins {
     input:
     val harmonised_gwas_vcf
     val project_name
+    val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env STEP_4_JOB_ID, emit: ch_step_4_job_id 
+    env STEP_4_RESULTS_DIR, emit: ch_step_4_results_dir
 
     script:
     harmonised_data = params.step_4_identify_causal_proteins_xqtlbiolinks_gwas_vcf ?: harmonised_gwas_vcf
@@ -31,5 +34,6 @@ process trigger_step_4_identify_causal_proteins {
         --wait-completion | tee job_status_step_4.txt
 
     STEP_4_JOB_ID=\$(grep -e "Your assigned job id is" job_status_step_4.txt | rev | cut -d " " -f 1 | rev)
+    STEP_4_RESULTS_DIR="${project_bucket}/\$STEP_4_JOB_ID/results/results"
     """
 }

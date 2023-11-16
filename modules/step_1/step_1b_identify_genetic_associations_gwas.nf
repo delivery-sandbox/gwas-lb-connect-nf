@@ -7,6 +7,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
 
     output:

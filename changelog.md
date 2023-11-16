@@ -2,6 +2,15 @@
 
 PR centric changelog with description of notable changes implemented in a PR.
 
+### 1.1.0
+
+PR: https://github.com/lifebit-ai/end-to-end-target-identification/pull/10
+
+#### Added
+
+- Added `outdir` parameter in order to redirect `publishDir` through orchestrator job id
+- Added `end_to_end_job_id` variable to all step processes
+
 ### 1.0.0
 
 PR: https://github.com/lifebit-ai/drug-discovery-protocol-orchestrator-nf/pull/9

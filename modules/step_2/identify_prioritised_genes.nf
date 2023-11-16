@@ -4,10 +4,15 @@ process trigger_step_2_identify_prioritised_genes {
     input:
     val harmonised_gwas_vcf
     val project_name
+    val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
-    env STEP_2_JOB_ID, emit: ch_step_2_job_id 
+    env STEP_2_JOB_ID, emit: ch_step_2_job_id
+    //path("${project_bucket}/${end_to_end_job_id}/results/results/trigger_step_2_identify_prioritised_genes"), emit: ch_step_2_outdir
+    //path("${project_bucket}/${ch_step_2_job_id}/results/results/*"), emit: ch_step_2_outdir
+    env STEP_2_RESULTS_DIR, emit: ch_step_2_results_dir
 
     script:
     harmonised_data = params.step_2_identify_prioritised_genes_variant_to_gene_gwas_vcf ?: harmonised_gwas_vcf
@@ -36,5 +41,6 @@ process trigger_step_2_identify_prioritised_genes {
         --wait-completion | tee job_status_step_2.txt
 
     STEP_2_JOB_ID=\$(grep -e "Your assigned job id is" job_status_step_2.txt | rev | cut -d " " -f 1 | rev)
+    STEP_2_RESULTS_DIR="${project_bucket}/\$STEP_2_JOB_ID/results/results"
     """
 }

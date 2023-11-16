@@ -7,6 +7,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env GWAS_HARMONISED_VCF_LIFTOVERED, emit: ch_liftovered_gwas_vcf
@@ -67,6 +68,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env FINEMAPPING_OUT, emit: ch_finemapping_out
@@ -110,7 +112,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
     fi
 
     FINEMAPPING_JOB_ID=\$(grep -e "Your assigned job id is" job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
-    FINEMAPPING_OUT="${project_bucket}/\$FINEMAPPING_JOB_ID/results/results/polyfun/aggregated_results/polyfun_agg_GRCh38.txt"
+    FINEMAPPING_OUT="${project_bucket}/\$FINEMAPPING_JOB_ID/results/results"
     """
 }
 
@@ -120,10 +122,13 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
     input:
     val finemapping_out
     val project_name
+    val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env CHEERS_JOB_ID, emit: ch_cheers_job_id
+    env STEP_5_RESULTS_DIR, emit: ch_step_5_results_dir
 
     """
     # CHEERS
@@ -149,5 +154,6 @@ process trigger_step_5_identify_mechanism_of_action_cheers {
         --wait-completion | tee job_status_cheers.txt
 
     CHEERS_JOB_ID=\$(grep -e "Your assigned job id is" job_status_cheers.txt | rev | cut -d " " -f 1 | rev)
+    STEP_5_RESULTS_DIR="${project_bucket}/\$CHEERS_JOB_ID/results/results"
     """
 }

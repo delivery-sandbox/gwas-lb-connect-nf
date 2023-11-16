@@ -6,6 +6,7 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env HARMONISATION_OUT, emit: ch_harmonisation_out

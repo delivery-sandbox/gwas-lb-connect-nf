@@ -6,6 +6,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
     val project_name
     val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env GSEA_OUT, emit: ch_gsea_genenames
@@ -60,10 +61,13 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
     input:
     val gsea_genenames
     val project_name
+    val project_bucket
     val workspace_id
+    val end_to_end_job_id
 
     output:
     env DRUG2WAYS_JOB_ID, emit: ch_drug2ways_job_id
+    env STEP_6_RESULTS_DIR, emit: ch_step_6_results_dir
 
     script:
     """
@@ -91,5 +95,6 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
         --wait-completion | tee job_status_drug2ways.txt
 
     DRUG2WAYS_JOB_ID=\$(grep -e "Your assigned job id is" job_status_drug2ways.txt | rev | cut -d " " -f 1 | rev)
+    STEP_6_RESULTS_DIR="${project_bucket}/\$DRUG2WAYS_JOB_ID/results/results"
     """
 }

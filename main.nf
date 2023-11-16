@@ -25,7 +25,7 @@ include { trigger_step_5_identify_mechanism_of_action_finemapping } from './modu
 include { trigger_step_5_identify_mechanism_of_action_cheers } from './modules/step_5/identify_mechanism_of_action.nf'
 include { trigger_step_6_identify_candidate_drugs_gsea } from './modules/step_6/identify_candidate_drugs.nf'
 include { trigger_step_6_identify_candidate_drugs_drug2ways } from './modules/step_6/identify_candidate_drugs.nf'
-include { generate_job_id_report } from './modules/utils/generate_job_id_report.nf'
+include { combine_reports } from './modules/utils/generate_reports.nf'
 
 /* --------------------
 | Summary              |
@@ -330,12 +330,19 @@ workflow {
 
     configure_project()
 
+    project_dir = workflow.projectDir
+
+    if( workflow.workDir.toString().startsWith("/${params.cloudos_workdir}") ) {
+        end_to_end_job_id = workflow.workDir.subpath(8,9).toString()
+    }
+
     if (params.step_1) {
         // generate phenofile
         trigger_step_1a_identify_genetic_associations_phenofile(
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         phenofile = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_phenofile_out
         genotype_files_list = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
@@ -347,7 +354,8 @@ workflow {
             genotype_files_list,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         gwas = trigger_step_1b_identify_genetic_associations_gwas.out.ch_gwas_out
         gwas_job_id = trigger_step_1b_identify_genetic_associations_gwas.out.ch_step_1b_job_id
@@ -357,7 +365,8 @@ workflow {
             gwas,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         harmonised = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_harmonisation_out
         harmonised_job_id = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_step_1c_job_id
@@ -372,33 +381,45 @@ workflow {
         trigger_step_2_identify_prioritised_genes(
             harmonised,
             configure_project.out.ch_project_name,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         step_2_job_id = trigger_step_2_identify_prioritised_genes.out.ch_step_2_job_id
+        ch_step_2_results_dir = trigger_step_2_identify_prioritised_genes.out.ch_step_2_results_dir
     } else {
         step_2_job_id = false
+        ch_step_2_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_2")
     }
 
     if (params.step_3) {
         trigger_step_3_identify_causal_genes_and_pathways(
             harmonised,
             configure_project.out.ch_project_name,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         step_3_job_id = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_job_id
+        ch_step_3_results_dir = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_results_dir
     } else {
         step_3_job_id = false
+        ch_step_3_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_3")
     }
 
     if (params.step_4) {
         trigger_step_4_identify_causal_proteins(
             harmonised,
             configure_project.out.ch_project_name,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         step_4_job_id = trigger_step_4_identify_causal_proteins.out.ch_step_4_job_id
+        ch_step_4_results_dir = trigger_step_4_identify_causal_proteins.out.ch_step_4_results_dir
     } else {
         step_4_job_id = false
+        ch_step_4_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_4")
     }
 
     if (params.step_5) {
@@ -406,26 +427,32 @@ workflow {
             harmonised,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         trigger_step_5_identify_mechanism_of_action_finemapping(
             trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftovered_gwas_vcf,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         trigger_step_5_identify_mechanism_of_action_cheers(
             trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_out,
             configure_project.out.ch_project_name,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         liftover_job_id = trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftover_job_id
         finemapping_job_id = trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_job_id
         cheers_job_id = trigger_step_5_identify_mechanism_of_action_cheers.out.ch_cheers_job_id
+        ch_step_5_results_dir = trigger_step_5_identify_mechanism_of_action_cheers.out.ch_step_5_results_dir
     } else {
         liftover_job_id = false
         finemapping_job_id = false
         cheers_job_id = false
+        ch_step_5_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_5")
     }
 
     if (params.step_6) {
@@ -433,21 +460,34 @@ workflow {
             harmonised,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         trigger_step_6_identify_candidate_drugs_drug2ways(
             trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_genenames,
             configure_project.out.ch_project_name,
-            configure_project.out.ch_workspace_id
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
         )
         gsea_job_id = trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_job_id
         drug2ways_job_id = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_drug2ways_job_id
+        ch_step_6_results_dir = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_step_6_results_dir
     } else {
         gsea_job_id = false
         drug2ways_job_id = false
+        ch_step_6_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_6")
     }
 
-    generate_job_id_report(
+    ch_report_dir = Channel.value(file("$project_dir/bin/report"))
+
+    combine_reports(
+        ch_report_dir,
+        ch_step_2_results_dir,
+        ch_step_3_results_dir,
+        ch_step_4_results_dir,
+        ch_step_5_results_dir,
+        ch_step_6_results_dir,
         pheno_job_id,
         gwas_job_id,
         harmonised_job_id,
@@ -462,17 +502,6 @@ workflow {
     )
 
 }
-
-// // Trace report
-// user_name = workflow.userName
-
-// if (user_name == "ubuntu" || user_name == "ec2-user") {
-//     workflow.onComplete {
-//         def trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-//         trace_report = file("/home/${user_name}/nf-out/trace.txt")
-//         trace_report.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
-//     }
-// }
 
 // ANSII string of Lifebit logo
 def lifebitLogo() {
