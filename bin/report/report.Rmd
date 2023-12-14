@@ -10,12 +10,12 @@ output:
     highlight: tango           # specifies the syntax highlighting style
     css: 'style.css'
 params:
-  table_smr: "table_smr"
-  table_closest_genes: "table_closest_genes"
-  table_multixcan: "table_multixcan"
-  forest_pval: x
-  forest_plot: "forest_plot.svg"
-  locuszoom_plot: "locuszoom_plot.svg"
+  table_smr:
+  table_closest_genes:
+  table_multixcan:
+  forest_pval:
+  forest_plot:
+  locuszoom_plot:
 title: "`r paste0('End to end target identification Report Summary' , '') `"
 author: ""
 date: ""
@@ -30,13 +30,20 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
 
 ```{r echo = FALSE}
 suppressPackageStartupMessages({
-    library(reactable)
-    library(reactR)
-    library(reactablefmtr)
-    library(htmltools)
-    library(dplyr)
+  library(reactable)
+  library(reactR)
+  library(reactablefmtr)
+  library(magrittr)
+  library(stringr)
+  library(htmltools)
+  library(dplyr)
+  library(knitr)
 })
 source("reactable_funcs.R")
+```
+
+```{r include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
 # About
@@ -50,46 +57,37 @@ The first is a forest plot that shows the effect sizes (b_SMR) derived from MR i
 significant variant below the chosen p-value threshold.
 The second plot is a stacked-locuszoom plot which describe the effect size distribution for a 1Mb region around the chosen or the automaticaly selected variant based on the the most significant p-value (p_SMR) present.
 
-
-```{r include = FALSE}
-knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
-```
-
 ```{r echo = FALSE}
 source("DTable.R")
-suppressPackageStartupMessages({
-library(magrittr)
-library(htmltools)
-library(stringr)
-library(dplyr)
-})
 fignumber<-1
-
 ```
 
-```{r eval=(params$forest_plot != "empty")}
-knitr::asis_output("## Visualisations\n\n")
-knitr::asis_output("### Forest plot of SMR signals with a p-value lower than the threshold given\n\n")
-figure_name  <- paste0("Figure ","forest-plot"," ")
+```{r eval=(!is.null(params$forest_plot))}
+asis_output("## Visualisations\n\n")
+asis_output("### Forest plot of SMR signals with a p-value lower than the threshold given\n\n")
+figure_name <- paste0("Figure ", "forest-plot", " ")
 figure_caption <- "forest plot"
 knitr::include_graphics(params$forest_plot, )
-htmltools::tags$figcaption( style = 'caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d',
-                            htmltools::em(figure_name),
-                            htmltools::em(figure_caption))
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
 ```
 
-```{r eval=(params$forest_plot != "empty")}
-knitr::asis_output("### Stacked locuszoom plot for SMR results  \n\n")
-figure_name  <- paste0("Figure","locuszoom-plot"," ")
+```{r eval=(!is.null(params$locuszoom_plot))}
+asis_output("### Stacked locuszoom plot for SMR results  \n\n")
+figure_name <- paste0("Figure", "locuszoom-plot", " ")
 figure_caption <- "locuszoom-plot"
 knitr::include_graphics(params$locuszoom_plot, )
-htmltools::tags$figcaption( style = 'caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d',
-                            htmltools::em(figure_name),
-                            htmltools::em(figure_caption))
-
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
 ```
 
-```{r eval=(params$forest_plot != "empty")}
+```{r eval=(!is.null(params$table_smr))}
 # Read the table in as a dataframe
 forest_pval <<- as.numeric(params$forest_pval)
 data_SMR <- read.table(params$table_smr, h = T)
@@ -97,41 +95,40 @@ data_SMR <- read.table(params$table_smr, h = T)
 filtered_df_smr <- data_SMR %>%
   filter(p_SMR < forest_pval)
 # Sort the filtered data to keep the top 100 rows based on "number_of_paths"
-if(nrow(filtered_df_smr)==0){
-  top_100_SMR = data.frame(SMR_data = "No associations found with the parameters used. Please update either p-value for the forestplot")
-}else{
-top_100_SMR <- filtered_df_smr %>%
-  arrange(p_SMR) %>%
-  distinct() %>%
-  slice(1:100)
+if (nrow(filtered_df_smr) == 0) {
+  top_100_SMR <- data.frame(SMR_data = "No associations found with the parameters used. Please update either p-value for the forestplot")
+} else {
+  top_100_SMR <- filtered_df_smr %>%
+    arrange(p_SMR) %>%
+    distinct() %>%
+    slice(1:100)
 }
-knitr::asis_output("## Showing 100 signals sorted by p-value for the SMR analysis\n\n")
+asis_output("## Showing 100 signals sorted by p-value for the SMR analysis\n\n")
 generateReactable(top_100_SMR)
-
 ```
 
-```{r eval=(params$table_closest_genes != "empty")}
+```{r eval=(!is.null(params$table_closest_genes))}
 data_closest_gene <- read.table(params$table_closest_genes, h = T, sep = ",")
-if(nrow(data_closest_gene)==0){
-  top_100_closest_gene = data.frame(variant_to_gene="No associations found with the parameters used. Please update either p-value or check that the genome build is correct")
-}else{
-top_100_closest_gene <- data_closest_gene %>%
-  arrange(distance_TSS) %>%
-  distinct() %>%
-  slice(1:100)
+if (nrow(data_closest_gene) == 0) {
+  top_100_closest_gene <- data.frame(variant_to_gene = "No associations found with the parameters used. Please update either p-value or check that the genome build is correct")
+} else {
+  top_100_closest_gene <- data_closest_gene %>%
+    arrange(distance_TSS) %>%
+    distinct() %>%
+    slice(1:100)
 }
-knitr::asis_output("## Showing 100 signals sorted by distance between a variant and a gene\n\n")
+asis_output("## Showing 100 signals sorted by distance between a variant and a gene\n\n")
 # Generate reactable with data from reactable_funcs.R
 generateReactable(top_100_closest_gene)
 ```
 
-```{r eval=(params$table_multixcan != "empty")}
+```{r eval=(!is.null(params$table_multixcan))}
 data_multixcan <- read.table(params$table_multixcan, h = T, sep = "\t")
 top_100_multixcan <- data_multixcan %>%
   arrange(pvalue) %>%
   distinct() %>%
   slice(1:100)
-knitr::asis_output("## Showing 100 signals sorted by p-value for the Multixcan analysis\n\n")
+asis_output("## Showing 100 signals sorted by p-value for the Multixcan analysis\n\n")
 generateReactable(top_100_multixcan)
 ```
 

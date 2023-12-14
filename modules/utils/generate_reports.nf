@@ -64,6 +64,9 @@ process combine_reports {
     step_5_cheers_job = step_5_cheers ? "\nStep 5 cheers job path: ${params.cloudos_url}/app/jobs/$step_5_cheers" : "\nStep 5 cheers job path: 'step_5_cheers' was not activated"
     step_6_gsea_job = step_6_gsea ? "\nStep 6 gsea job path: ${params.cloudos_url}/app/jobs/$step_6_gsea" : "\nStep 6 gsea job path: 'step_6_gsea' was not activated"
     step_6_drug_job = step_6_drug ? "\nStep 6 drug2ways job path: ${params.cloudos_url}/app/jobs/$step_6_drug" : "\nStep 6 drug2ways job path: 'step_6_drug' was not activated"
+    v2g_report_cmd = params.run_v2g ? "for i in `find -L step_2 -name \"*.svg\"`; do name=`basename \$i .svg | sed 's/-/_/g'`; echo \"\$name='\$i'\" >> file_list; done; echo \"table_smr='\$(find -L step_2 -name \"all_tissues.results\")'\" >> file_list.txt; echo \"forest_pval=${params.forest_pval}\" >> file_list.txt" : "echo ''"
+    closest_genes_cmd = params.closest_genes ? "echo \"table_closest_genes='\$(find -L step_2 -name \"*.csv\")'\"  >> file_list.txt" : "echo ''"
+    metaxcan_cmd = params.metaxcan ? "echo \"table_multixcan='\$(find -L step_2/smultixcan -name \"*.txt\")'\"  >> file_list.txt" : "echo ''"
     """
     # generate job id report
     echo "$step_1a_job" > protocol-job-links.txt
@@ -89,12 +92,19 @@ process combine_reports {
     $was_step6_active
 
     # search files for step 2
-    if ${params.step_2_identify_prioritised_genes_variant_to_gene_run_v2g} && ${params.step_2}; then for i in `find -L step_2 -name "*.svg"`; do name=`basename \$i .svg | sed 's/-/_/g'`; echo "\$name='\$i'" >> file_list.txt;done; else echo "forest_plot='empty'"  >> file_list.txt; fi
-    if ${params.step_2}; then echo "forest_pval=${params.step_2_identify_prioritised_genes_variant_to_gene_forest_pval}" >> file_list.txt; fi
-    if ${params.step_2_identify_prioritised_genes_variant_to_gene_run_v2g} && ${params.step_2}; then echo "table_smr='\$(find -L step_2 -name "*.results")'" >> file_list.txt;fi
-    if ${params.step_2_identify_prioritised_genes_variant_to_gene_closest_genes} && ${params.step_2}; then echo "table_closest_genes='\$(find -L step_2 -name "*.csv")'"  >> file_list.txt; else echo "table_closest_genes='empty'">> file_list.txt; fi
-    if ${params.step_2_identify_prioritised_genes_variant_to_gene_metaxcan} && ${params.step_2}; then echo "table_multixcan='\$(find -L step_2/smultixcan -name "*.txt")'"  >> file_list.txt; else echo "table_multixcan='empty'">> file_list.txt; fi
-    if ${params.step_2}; then cat file_list.txt | tr "\\n" "," | sed 's/,\$//g' > file_list1.txt; fi
+    if ${params.step_2}; then
+        if [ ! -e "step_2/no_v2g_signals.svg" ]; then
+            ${v2g_report_cmd}
+        fi
+        ${closest_genes_cmd}
+        if [ ! -e "step_2/smultixcan/empty_file.txt" ]; then
+            ${metaxcan_cmd}
+        fi;
+    fi
+
+    if ${params.step_2}; then
+        cat file_list.txt | tr "\\n" "," | sed 's/,\$//g' > file_list1.txt;
+    fi
 
     # step 3,4
     # at the moment not generating report
@@ -103,6 +113,7 @@ process combine_reports {
     if ${params.step_2}; then 
         Rscript -e "rmarkdown::render('report.Rmd', params = list(`cat file_list1.txt`))"
         cp report.html multiqc_report.html
-        mv report.html report_multiqc_report.html; fi
+        mv report.html report_multiqc_report.html;
+    fi
     """
 }
