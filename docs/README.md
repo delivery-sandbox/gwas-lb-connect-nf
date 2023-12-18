@@ -1081,11 +1081,7 @@ For each step a Nextflow profile exists:
 
 - **`--step_6_identify_candidate_drugs_gsea_pval_col_name`**: Column name from SummaryStats file in which P-values present. Default: "p.value".
 
-- **`--step_6_identify_candidate_drugs_gsea_ref_panel_bed`**: Reference panel bed file. Default: "s3://gel-lifebit-featured-datasets/pipelines/gwasgsa/reference/g1000_eur/g1000_eur.bed".
-
-- **`--step_6_identify_candidate_drugs_gsea_ref_panel_bim`**: Reference panel bim file. Default: "s3://gel-lifebit-featured-datasets/pipelines/gwasgsa/reference/g1000_eur/g1000_eur.bim".
-
-- **`--step_6_identify_candidate_drugs_gsea_ref_panel_fam`**: Reference panel fam file. Default: "s3://gel-lifebit-featured-datasets/pipelines/gwasgsa/reference/g1000_eur/g1000_eur.fam".
+- **`--step_6_identify_candidate_drugs_gsea_ref_panel_plink`**: Reference panel plink files. Default: "s3://gel-lifebit-featured-datasets/pipelines/gwasgsa/reference/g1000_eur/g1000_eur.{bed,bim,fam}".
 
 - **`--step_6_identify_candidate_drugs_gsea_ref_panel_synonyms`**: Reference panel synonyms file. Default: "s3://gel-lifebit-featured-datasets/pipelines/gwasgsa/reference/g1000_eur/g1000_eur.synonyms".
 

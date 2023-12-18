@@ -27,9 +27,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         -p "summary_stats=$harmonised_data" \
         -p "snp_col_name=${params.step_6_identify_candidate_drugs_gsea_snp_col_name}" \
         -p "pval_col_name=${params.step_6_identify_candidate_drugs_gsea_pval_col_name}" \
-        -p "ref_panel_bed=${params.step_6_identify_candidate_drugs_gsea_ref_panel_bed}" \
-        -p "ref_panel_bim=${params.step_6_identify_candidate_drugs_gsea_ref_panel_bim}" \
-        -p "ref_panel_fam=${params.step_6_identify_candidate_drugs_gsea_ref_panel_fam}" \
+        -p "ref_panel_plink=${params.step_6_identify_candidate_drugs_gsea_ref_panel_plink}" \
         -p "ref_panel_synonyms=${params.step_6_identify_candidate_drugs_gsea_ref_panel_synonyms}" \
         -p "gene_loc_file=${params.step_6_identify_candidate_drugs_gsea_gene_loc_file}" \
         -p "set_anot_file=${params.step_6_identify_candidate_drugs_gsea_set_anot_file}" \
