@@ -64,9 +64,9 @@ process combine_reports {
     step_5_cheers_job = step_5_cheers ? "\nStep 5 cheers job path: ${params.cloudos_url}/app/jobs/$step_5_cheers" : "\nStep 5 cheers job path: 'step_5_cheers' was not activated"
     step_6_gsea_job = step_6_gsea ? "\nStep 6 gsea job path: ${params.cloudos_url}/app/jobs/$step_6_gsea" : "\nStep 6 gsea job path: 'step_6_gsea' was not activated"
     step_6_drug_job = step_6_drug ? "\nStep 6 drug2ways job path: ${params.cloudos_url}/app/jobs/$step_6_drug" : "\nStep 6 drug2ways job path: 'step_6_drug' was not activated"
-    v2g_report_cmd = params.run_v2g ? "for i in `find -L step_2 -name \"*.svg\"`; do name=`basename \$i .svg | sed 's/-/_/g'`; echo \"\$name='\$i'\" >> file_list.txt; done; echo \"table_smr='\$(find -L step_2 -name \"all_tissues.results\")'\" >> file_list.txt; echo \"forest_pval=${params.forest_pval}\" >> file_list.txt" : "echo ''"
-    closest_genes_cmd = params.closest_genes ? "echo \"table_closest_genes='\$(find -L step_2 -name \"*.csv\")'\"  >> file_list.txt" : "echo ''"
-    metaxcan_cmd = params.metaxcan ? "echo \"table_multixcan='\$(find -L step_2/smultixcan -name \"*.txt\")'\"  >> file_list.txt" : "echo ''"
+    v2g_report_cmd = params.step_2_identify_prioritised_genes_variant_to_gene_run_v2g ? "for i in `find -L step_2 -name \"*.svg\"`; do name=`basename \$i .svg | sed 's/-/_/g'`; echo \"\$name='\$i'\" >> file_list.txt; done; echo \"table_smr='\$(find -L step_2 -name \"all_tissues.results\")'\" >> file_list.txt; echo \"forest_pval=${params.forest_pval}\" >> file_list.txt" : "echo ''"
+    closest_genes_cmd = params.step_2_identify_prioritised_genes_variant_to_gene_closest_genes ? "echo \"table_closest_genes='\$(find -L step_2 -name \"*.csv\")'\"  >> file_list.txt" : "echo ''"
+    metaxcan_cmd = params.step_2_identify_prioritised_genes_variant_to_gene_metaxcan ? "echo \"table_multixcan='\$(find -L step_2/smultixcan -name \"*.txt\")'\"  >> file_list.txt" : "echo ''"
     """
     # generate job id report
     echo "$step_1a_job" > protocol-job-links.txt
