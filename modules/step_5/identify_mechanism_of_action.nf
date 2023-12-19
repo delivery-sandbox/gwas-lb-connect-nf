@@ -48,14 +48,16 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
 
     # Check job status to fail early
     job_status=\$(tail -1 job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
+
+    LIFTOVER_JOB_ID=\$(grep -e "Your assigned job id is" job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
+    GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"
+
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
-        exit 1
+        exit 0
     fi
-
-    LIFTOVER_JOB_ID=\$(grep -e "Your assigned job id is" job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
     GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"
     """
 }
@@ -104,14 +106,16 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
 
     # Check job status to fail early
     job_status=\$(tail -1 job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
+
+    FINEMAPPING_JOB_ID=\$(grep -e "Your assigned job id is" job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
+
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
-        exit 1
+        FINEMAPPING_OUT=false
+        exit 0
     fi
-
-    FINEMAPPING_JOB_ID=\$(grep -e "Your assigned job id is" job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
     FINEMAPPING_OUT="${project_bucket}/\$FINEMAPPING_JOB_ID/results/results"
     """
 }
