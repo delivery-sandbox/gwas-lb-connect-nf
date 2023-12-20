@@ -50,12 +50,12 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
     job_status=\$(tail -1 job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
 
     LIFTOVER_JOB_ID=\$(grep -e "Your assigned job id is" job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
-    GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
+        GWAS_HARMONISED_VCF_LIFTOVERED=false
         exit 0
     fi
     GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"

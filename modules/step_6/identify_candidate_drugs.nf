@@ -48,7 +48,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
-        GSEA_JOB_ID=false
+        GSEA_OUT=false
         exit 0
     fi
     GSEA_OUT="${project_bucket}/\$GSEA_JOB_ID/results/results/magma/magma_out.genes.out.prioritised.genenames.tsv"
