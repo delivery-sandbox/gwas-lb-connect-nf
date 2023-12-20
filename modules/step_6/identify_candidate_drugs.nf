@@ -41,14 +41,16 @@ process trigger_step_6_identify_candidate_drugs_gsea {
 
     # Check job status to fail early
     job_status=\$(tail -1 job_status_gsea.txt | rev | cut -d " " -f 1 | rev)
+
+    GSEA_JOB_ID=\$(grep -e "Your assigned job id is" job_status_gsea.txt | rev | cut -d " " -f 1 | rev)
+
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
-        exit 1
+        GSEA_OUT=false
+        exit 0
     fi
-
-    GSEA_JOB_ID=\$(grep -e "Your assigned job id is" job_status_gsea.txt | rev | cut -d " " -f 1 | rev)
     GSEA_OUT="${project_bucket}/\$GSEA_JOB_ID/results/results/magma/magma_out.genes.out.prioritised.genenames.tsv"
     """
 }
@@ -85,6 +87,7 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
         -p "sources=${params.step_6_identify_candidate_drugs_drug2ways_sources}" \
         -p "lmax=${params.step_6_identify_candidate_drugs_drug2ways_lmax}" \
         -p "reference_data_bucket=${params.step_6_identify_candidate_drugs_drug2ways_reference_data_bucket}" \
+        -p "combine=${params.step_6_identify_candidate_drugs_drug2ways_combine}" \
         -p "errorStrategy=${params.module_strategy}" \
         --resumable \
         --batch \

@@ -45,14 +45,16 @@ process trigger_step_1c_identify_genetic_associations_harmonisation {
 
     # Check job status to fail early
     job_status=\$(tail -1 job_status_harmonisation.txt | rev | cut -d " " -f 1 | rev)
+
+    HARMONISATION_JOB_ID=\$(grep -e "Your assigned job id is" job_status_harmonisation.txt | rev | cut -d " " -f 1 | rev)
+
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
     else
         echo "[ERROR] Your job did not finish successfully."
-        exit 1
+        HARMONISATION_OUT=false
+        exit 0
     fi
-
-    HARMONISATION_JOB_ID=\$(grep -e "Your assigned job id is" job_status_harmonisation.txt | rev | cut -d " " -f 1 | rev)
     HARMONISATION_OUT="${project_bucket}/\$HARMONISATION_JOB_ID/results/results/harmonised/*.harmonised.gwas.vcf"
     """
 }

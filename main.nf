@@ -13,6 +13,7 @@ nextflow.enable.dsl = 2
 /* --------------------
 | Imports              |
 --------------------- */
+
 include { configure_project } from './modules/utils/configure_project.nf'
 include { trigger_step_1a_identify_genetic_associations_phenofile } from './modules/step_1/step_1a_identify_genetic_associations_phenofile.nf'
 include { trigger_step_1b_identify_genetic_associations_gwas } from './modules/step_1/step_1b_identify_genetic_associations_gwas.nf'
@@ -26,6 +27,7 @@ include { trigger_step_5_identify_mechanism_of_action_cheers } from './modules/s
 include { trigger_step_6_identify_candidate_drugs_gsea } from './modules/step_6/identify_candidate_drugs.nf'
 include { trigger_step_6_identify_candidate_drugs_drug2ways } from './modules/step_6/identify_candidate_drugs.nf'
 include { combine_reports } from './modules/utils/generate_reports.nf'
+include { step_check; file_check } from './modules/utils/check_files.nf'
 
 /* --------------------
 | Summary              |
@@ -326,6 +328,10 @@ if (!params.step_1a_identify_genetic_associations_phenofile_pheno_label){
     exit 1, "Missing mandatory option to run analysis: '--step_1a_identify_genetic_associations_phenofile_pheno_label'"
 }
 
+/* --------------------
+| Main workflow        |
+--------------------- */
+
 workflow {
 
     configure_project()
@@ -335,6 +341,17 @@ workflow {
     if( workflow.workDir.toString().startsWith("/${params.cloudos_workdir}") ) {
         end_to_end_job_id = workflow.workDir.subpath(8,9).toString()
     }
+    pheno_job_id = false
+    gwas_job_id = false
+    harmonised_job_id = false
+    step_2_job_id = false
+    step_3_job_id = false
+    step_4_job_id = false
+    liftover_job_id = false
+    finemapping_job_id = false
+    cheers_job_id = false
+    gsea_job_id = false
+    drug2ways_job_id = false
 
     if (params.step_1) {
         // generate phenofile
@@ -344,8 +361,12 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        phenofile = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_phenofile_out
-        genotype_files_list = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
+        phenofile = step_check(
+            trigger_step_1a_identify_genetic_associations_phenofile.out.ch_phenofile_out
+        )        
+        genotype_files_list = step_check(
+            trigger_step_1a_identify_genetic_associations_phenofile.out.ch_genotype_files_list
+        )
         pheno_job_id = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_step_1a_job_id
 
         // run gwas (regenie)
@@ -357,7 +378,9 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        gwas = trigger_step_1b_identify_genetic_associations_gwas.out.ch_gwas_out
+        gwas = step_check(
+            trigger_step_1b_identify_genetic_associations_gwas.out.ch_gwas_out
+        )
         gwas_job_id = trigger_step_1b_identify_genetic_associations_gwas.out.ch_step_1b_job_id
 
         // run harmonisation
@@ -368,13 +391,15 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        harmonised = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_harmonisation_out
+        harmonised = step_check(
+            trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_harmonisation_out
+        )
         harmonised_job_id = trigger_step_1c_identify_genetic_associations_harmonisation.out.ch_step_1c_job_id
     } else {
         harmonised = false
-        pheno_job_id = false
-        gwas_job_id = false
-        harmonised_job_id = false
+    }
+    if (! harmonised) {
+        exit 0, "There are no harmonised summary statistics available to progress through the drug discovery"
     }
 
     if (params.step_2) {
@@ -386,9 +411,11 @@ workflow {
             end_to_end_job_id
         )
         step_2_job_id = trigger_step_2_identify_prioritised_genes.out.ch_step_2_job_id
-        ch_step_2_results_dir = trigger_step_2_identify_prioritised_genes.out.ch_step_2_results_dir
+        ch_step_2_results_dir = file_check(
+            trigger_step_2_identify_prioritised_genes.out.ch_step_2_results_dir,
+            "$project_dir/assets/NO_FILE_STEP_2"
+        )
     } else {
-        step_2_job_id = false
         ch_step_2_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_2")
     }
 
@@ -401,9 +428,11 @@ workflow {
             end_to_end_job_id
         )
         step_3_job_id = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_job_id
-        ch_step_3_results_dir = trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_results_dir
+        ch_step_3_results_dir = file_check(
+            trigger_step_3_identify_causal_genes_and_pathways.out.ch_step_3_results_dir,
+            "$project_dir/assets/NO_FILE_STEP_3"
+        )
     } else {
-        step_3_job_id = false
         ch_step_3_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_3")
     }
 
@@ -416,9 +445,11 @@ workflow {
             end_to_end_job_id
         )
         step_4_job_id = trigger_step_4_identify_causal_proteins.out.ch_step_4_job_id
-        ch_step_4_results_dir = trigger_step_4_identify_causal_proteins.out.ch_step_4_results_dir
+        ch_step_4_results_dir = file_check(
+            trigger_step_4_identify_causal_proteins.out.ch_step_4_results_dir,
+            "$project_dir/assets/NO_FILE_STEP_4"
+        )
     } else {
-        step_4_job_id = false
         ch_step_4_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_4")
     }
 
@@ -430,28 +461,42 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        trigger_step_5_identify_mechanism_of_action_finemapping(
-            trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftovered_gwas_vcf,
-            configure_project.out.ch_project_name,
-            configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id,
-            end_to_end_job_id
+        ch_step_5_liftover_results = step_check(
+            trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftovered_gwas_vcf
         )
-        trigger_step_5_identify_mechanism_of_action_cheers(
-            trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_out,
-            configure_project.out.ch_project_name,
-            configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id,
-            end_to_end_job_id
-        )
-        liftover_job_id = trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftover_job_id
-        finemapping_job_id = trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_job_id
-        cheers_job_id = trigger_step_5_identify_mechanism_of_action_cheers.out.ch_cheers_job_id
-        ch_step_5_results_dir = trigger_step_5_identify_mechanism_of_action_cheers.out.ch_step_5_results_dir
+        if (! ch_step_5_liftover_results as Boolean) {
+            log.warn "There are no lifted over summary statistics available to progress through the Mechanism of Action"
+        } else {
+            trigger_step_5_identify_mechanism_of_action_finemapping(
+                ch_step_5_liftover_results,
+                configure_project.out.ch_project_name,
+                configure_project.out.ch_project_bucket,
+                configure_project.out.ch_workspace_id,
+                end_to_end_job_id
+            )
+            ch_step_5_finemapping_results = step_check(
+                trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_out
+            )
+            if (! ch_step_5_finemapping_results as Boolean) {
+                log.warn "There are no finemapping results available to progress through the Mechanism of Action"
+            } else {
+                trigger_step_5_identify_mechanism_of_action_cheers(
+                    trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_out,
+                    configure_project.out.ch_project_name,
+                    configure_project.out.ch_project_bucket,
+                    configure_project.out.ch_workspace_id,
+                    end_to_end_job_id
+                )
+            }
+            liftover_job_id = trigger_step_5_identify_mechanism_of_action_liftover.out.ch_liftover_job_id
+            finemapping_job_id = trigger_step_5_identify_mechanism_of_action_finemapping.out.ch_finemapping_job_id
+            cheers_job_id = trigger_step_5_identify_mechanism_of_action_cheers.out.ch_cheers_job_id
+            ch_step_5_results_dir = file_check(
+                trigger_step_5_identify_mechanism_of_action_cheers.out.ch_step_5_results_dir,
+                "$project_dir/assets/NO_FILE_STEP_5"
+            )
+        }
     } else {
-        liftover_job_id = false
-        finemapping_job_id = false
-        cheers_job_id = false
         ch_step_5_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_5")
     }
 
@@ -463,19 +508,27 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        trigger_step_6_identify_candidate_drugs_drug2ways(
-            trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_genenames,
-            configure_project.out.ch_project_name,
-            configure_project.out.ch_project_bucket,
-            configure_project.out.ch_workspace_id,
-            end_to_end_job_id
+        ch_step_6_gsea_results = step_check(
+            trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_genenames
         )
-        gsea_job_id = trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_job_id
-        drug2ways_job_id = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_drug2ways_job_id
-        ch_step_6_results_dir = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_step_6_results_dir
+        if (! ch_step_6_gsea_results as Boolean) {
+            log.warn "There are no causal genes results available to progress through the Candidate Drug Identification"
+        } else {
+            trigger_step_6_identify_candidate_drugs_drug2ways(
+                ch_step_6_gsea_results,
+                configure_project.out.ch_project_name,
+                configure_project.out.ch_project_bucket,
+                configure_project.out.ch_workspace_id,
+                end_to_end_job_id
+            )
+            gsea_job_id = trigger_step_6_identify_candidate_drugs_gsea.out.ch_gsea_job_id
+            drug2ways_job_id = trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_drug2ways_job_id
+            ch_step_6_results_dir = file_check(
+                trigger_step_6_identify_candidate_drugs_drug2ways.out.ch_step_6_results_dir,
+                "$project_dir/assets/NO_FILE_STEP_6"
+            )
+        }
     } else {
-        gsea_job_id = false
-        drug2ways_job_id = false
         ch_step_6_results_dir = Channel.fromPath("$project_dir/assets/NO_FILE_STEP_6")
     }
 
