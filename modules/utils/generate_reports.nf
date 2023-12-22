@@ -102,18 +102,28 @@ process combine_reports {
         fi;
     fi
 
-    if ${params.step_2}; then
-        cat file_list.txt | tr "\\n" "," | sed 's/,\$//g' > file_list1.txt;
-    fi
-
     # step 3,4
     # at the moment not generating report
 
+    # step 5
+    if ${params.step_5}; then
+        pval_table=\$(find -L step_5 -name "*pValues.txt")
+        pval_param=""
+
+        # Check if pval_table is not empty
+        if [ -n "\$pval_table" ]; then
+            pval_param="pval_table='\$pval_table'"
+        fi
+
+        echo "\$pval_param" >> file_list.txt
+        echo "barplot='\$(find -L step_5 -name "*.svg")'" >> file_list.txt
+    fi
+
     # Generates the report
-    if ${params.step_2}; then 
+    if ${params.step_2} || ${params.step_5}; then
+        cat file_list.txt | tr "\\n" "," | sed 's/,\$//g' > file_list1.txt
         Rscript -e "rmarkdown::render('report.Rmd', params = list(`cat file_list1.txt`))"
         cp report.html multiqc_report.html
-        mv report.html report_multiqc_report.html;
     fi
     """
 }

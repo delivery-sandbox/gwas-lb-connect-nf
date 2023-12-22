@@ -16,6 +16,8 @@ params:
   forest_pval:
   forest_plot:
   locuszoom_plot:
+  pval_table:
+  barplot: "tissue_enrichment_plot.svg"
 title: "`r paste0('End to end target identification Report Summary' , '') `"
 author: ""
 date: ""
@@ -135,3 +137,43 @@ generateReactable(top_100_multixcan)
 # Step 3. Identifying Causal Genes and Pathways
 
 This step can be used to prioritise molecular phenotypes (like expression level of a gene, DNA methylation level at CpG sites) that mediate the genetic effects for complex trait and thus provide mechanistic interpretation of the GWAS signal.
+
+
+# Step 5. Identifying Mechanism of Action
+
+This pipeline uses a tissue enrichment analysis to identify the associations between variants and tissues. The plot below describes the p-value associated with the SNPs enrichment for each tissue.
+The table below contains the data used for the plot.
+
+## Visualisations
+
+### Bar plot of tissue enrichment signals with normal and adjusted p-value associated
+
+```{r enrichment_plot}
+figure_name <- paste0("Figure ", "tissue-enrichment-plot", " ")
+figure_caption <- "forest plot"
+knitr::include_graphics(params$barplot)
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
+```
+
+## Tables
+
+```{r pval_table, eval=(!is.null(params$pval_table))}
+# Read the table in as a dataframe
+data_tissue_enrichment <- read.table(params$pval_table, h = TRUE)
+# Filter the data to keep rows with "p_SMR" lower than forest_pval
+# Sort the filtered data to keep the top 100 rows based on "number_of_paths"
+if (nrow(data_tissue_enrichment) < 1) {
+  asis_output("### There are no signals to display for this study\n\n")
+} else {
+  top_100_tissue_enrichment <- data_tissue_enrichment %>%
+    arrange(pval_adjusted) %>%
+    distinct() %>%
+    slice(1:100)
+  asis_output("### Showing 100 signals sorted by adjusted p-values\n\n")
+  generateReactable(top_100_tissue_enrichment)
+}
+```

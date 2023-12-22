@@ -10,8 +10,6 @@ process trigger_step_2_identify_prioritised_genes {
 
     output:
     env STEP_2_JOB_ID, emit: ch_step_2_job_id
-    //path("${project_bucket}/${end_to_end_job_id}/results/results/trigger_step_2_identify_prioritised_genes"), emit: ch_step_2_outdir
-    //path("${project_bucket}/${ch_step_2_job_id}/results/results/*"), emit: ch_step_2_outdir
     env STEP_2_RESULTS_DIR, emit: ch_step_2_results_dir
 
     script:

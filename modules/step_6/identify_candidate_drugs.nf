@@ -32,6 +32,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         -p "gene_loc_file=${params.step_6_identify_candidate_drugs_gsea_gene_loc_file}" \
         -p "set_anot_file=${params.step_6_identify_candidate_drugs_gsea_set_anot_file}" \
         -p "reference_data_bucket=${params.step_6_identify_candidate_drugs_gsea_reference_data_bucket}" \
+        -p "combine=${params.step_6_identify_candidate_drugs_drug2ways_combine}" \
         --resumable \
         --batch \
         --job-queue "${params.cloudos_queue_name}" \
@@ -81,7 +82,6 @@ process trigger_step_6_identify_candidate_drugs_drug2ways {
         --git-tag "${params.step_6_identify_candidate_drugs_drug2ways_git_tag}" \
         --job-name "${params.step_6_identify_candidate_drugs_drug2ways_cloudos_job_name.replaceAll( / /, '_').replaceAll( /-/, '_').replaceAll(/:/, '_')}" \
         -p "targets=$gsea_genenames" \
-        -p "omnipathr_container=${params.step_6_identify_candidate_drugs_drug2ways_omnipathr_container}" \
         -p "get_drugs=${params.step_6_identify_candidate_drugs_drug2ways_get_drugs}" \
         -p "network=${params.step_6_identify_candidate_drugs_drug2ways_network}" \
         -p "sources=${params.step_6_identify_candidate_drugs_drug2ways_sources}" \
