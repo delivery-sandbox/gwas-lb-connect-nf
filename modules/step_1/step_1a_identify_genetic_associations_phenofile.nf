@@ -61,6 +61,8 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
     job_status=\$(tail -1 job_status_phenofile.txt | rev | cut -d " " -f 1 | rev)
 
     PHENOFILE_JOB_ID=\$(grep -e "Your assigned job id is" job_status_phenofile.txt | rev | cut -d " " -f 1 | rev)
+    PHENOFILE_OUT="${project_bucket}/\$PHENOFILE_JOB_ID/results/results/phenofile/matched_linked_phenofile.phe"
+    PHENOFILE_OUT_GENOFILE="${project_bucket}/\$PHENOFILE_JOB_ID/results/results/genotype_files_list_and_linking_table/genotype_files_list.csv"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
@@ -70,7 +72,5 @@ process trigger_step_1a_identify_genetic_associations_phenofile {
         PHENOFILE_OUT_GENOFILE=false
         exit 0
     fi
-    PHENOFILE_OUT="${project_bucket}/\$PHENOFILE_JOB_ID/results/results/phenofile/matched_linked_phenofile.phe"
-    PHENOFILE_OUT_GENOFILE="${project_bucket}/\$PHENOFILE_JOB_ID/results/results/genotype_files_list_and_linking_table/genotype_files_list.csv"
     """
 }

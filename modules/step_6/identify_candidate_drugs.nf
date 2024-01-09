@@ -44,6 +44,7 @@ process trigger_step_6_identify_candidate_drugs_gsea {
     job_status=\$(tail -1 job_status_gsea.txt | rev | cut -d " " -f 1 | rev)
 
     GSEA_JOB_ID=\$(grep -e "Your assigned job id is" job_status_gsea.txt | rev | cut -d " " -f 1 | rev)
+    GSEA_OUT="${project_bucket}/\$GSEA_JOB_ID/results/results/magma/magma_out.genes.out.prioritised.genenames.tsv"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
@@ -52,7 +53,6 @@ process trigger_step_6_identify_candidate_drugs_gsea {
         GSEA_OUT=false
         exit 0
     fi
-    GSEA_OUT="${project_bucket}/\$GSEA_JOB_ID/results/results/magma/magma_out.genes.out.prioritised.genenames.tsv"
     """
 }
 

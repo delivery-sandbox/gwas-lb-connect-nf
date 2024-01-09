@@ -50,6 +50,7 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
     job_status=\$(tail -1 job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
 
     LIFTOVER_JOB_ID=\$(grep -e "Your assigned job id is" job_status_liftover.txt | rev | cut -d " " -f 1 | rev)
+    GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
@@ -58,7 +59,6 @@ process trigger_step_5_identify_mechanism_of_action_liftover {
         GWAS_HARMONISED_VCF_LIFTOVERED=false
         exit 0
     fi
-    GWAS_HARMONISED_VCF_LIFTOVERED="${project_bucket}/\$LIFTOVER_JOB_ID/results/results/*_GRCh37_liftover_pass.vcf.gz"
     """
 }
 
@@ -108,6 +108,7 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
     job_status=\$(tail -1 job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
 
     FINEMAPPING_JOB_ID=\$(grep -e "Your assigned job id is" job_status_finemapping.txt | rev | cut -d " " -f 1 | rev)
+    FINEMAPPING_OUT="${project_bucket}/\$FINEMAPPING_JOB_ID/results/results"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
@@ -116,7 +117,6 @@ process trigger_step_5_identify_mechanism_of_action_finemapping {
         FINEMAPPING_OUT=false
         exit 0
     fi
-    FINEMAPPING_OUT="${project_bucket}/\$FINEMAPPING_JOB_ID/results/results"
     """
 }
 

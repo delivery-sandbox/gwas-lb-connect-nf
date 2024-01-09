@@ -57,6 +57,7 @@ process trigger_step_1b_identify_genetic_associations_gwas {
     job_status=\$(tail -1 job_status_gwas.txt | rev | cut -d " " -f 1 | rev)
 
     GWAS_JOB_ID=\$(grep -e "Your assigned job id is" job_status_gwas.txt | rev | cut -d " " -f 1 | rev)
+    GWAS_OUT="${project_bucket}/\$GWAS_JOB_ID/results/results/*/*/regenie/*-regenie_firth*.regenie"
 
     if [ \$job_status = "completed" ]; then
         echo "Your job finished successfully."
@@ -65,6 +66,5 @@ process trigger_step_1b_identify_genetic_associations_gwas {
         GWAS_OUT=false
         exit 0
     fi
-    GWAS_OUT="${project_bucket}/\$GWAS_JOB_ID/results/results/*/*/regenie/*-regenie_firth*.regenie"
     """
 }
