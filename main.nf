@@ -16,7 +16,9 @@ nextflow.enable.dsl = 2
 
 include { configure_project } from './modules/utils/configure_project.nf'
 include { trigger_step_1a_identify_genetic_associations_phenofile } from './modules/step_1/step_1a_identify_genetic_associations_phenofile.nf'
-include { trigger_step_1b_identify_genetic_associations_gwas } from './modules/step_1/step_1b_identify_genetic_associations_gwas.nf'
+include { trigger_step_1b_gwas_prepare_multi_sample_genotypes } from './modules/step_1/step_1b_identify_genetic_associations_gwas.nf'
+include { trigger_step_1b_gwas_annotate_samples } from './modules/step_1/step_1b_gwas_annotate_samples.nf'
+include { trigger_step_1b_gwas } from './modules/step_1/step_1b_gwas.nf'
 include { trigger_step_1c_identify_genetic_associations_harmonisation } from './modules/step_1/step_1c_identify_genetic_associations_harmonisation.nf'
 include { trigger_step_2_identify_prioritised_genes } from './modules/step_2/identify_prioritised_genes.nf'
 include { trigger_step_3_identify_causal_genes_and_pathways } from './modules/step_3/identify_causal_genes_and_pathways.nf'
@@ -102,31 +104,6 @@ if (params.debug) {
     summary['step_1a_identify_genetic_associations_phenofile_input_folder_location'] = params.step_1a_identify_genetic_associations_phenofile_input_folder_location
     summary['step_1a_identify_genetic_associations_phenofile_genotypic_linking_table'] = params.step_1a_identify_genetic_associations_phenofile_genotypic_linking_table
     summary['step_1a_identify_genetic_associations_phenofile_preprocess_list_and_linking'] = params.step_1a_identify_genetic_associations_phenofile_preprocess_list_and_linking
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_job_name'] = params.step_1b_identify_genetic_associations_gwas_cloudos_job_name
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_cost_limit'] = params.step_1b_identify_genetic_associations_gwas_cloudos_cost_limit
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_instance_disk_space'] = params.step_1b_identify_genetic_associations_gwas_cloudos_instance_disk_space
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_nextflow_profile'] = params.step_1b_identify_genetic_associations_gwas_cloudos_nextflow_profile
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_instance_type'] = params.step_1b_identify_genetic_associations_gwas_cloudos_instance_type
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_queue_name'] = params.step_1b_identify_genetic_associations_gwas_cloudos_queue_name
-    summary['step_1b_identify_genetic_associations_gwas_cloudos_wait_time'] = params.step_1b_identify_genetic_associations_gwas_cloudos_wait_time
-    summary['step_1b_identify_genetic_associations_gwas_genotype_format'] = params.step_1b_identify_genetic_associations_gwas_genotype_format
-    summary['step_1b_identify_genetic_associations_gwas_genotype_files_list'] = params.step_1b_identify_genetic_associations_gwas_genotype_files_list
-    summary['step_1b_identify_genetic_associations_gwas_genome_build'] = params.step_1b_identify_genetic_associations_gwas_genome_build
-    summary['step_1b_identify_genetic_associations_gwas_annotate_with_rsids'] = params.step_1b_identify_genetic_associations_gwas_annotate_with_rsids
-    summary['step_1b_identify_genetic_associations_gwas_king_reference_data'] = params.step_1b_identify_genetic_associations_gwas_king_reference_data
-    summary['step_1b_identify_genetic_associations_gwas_high_LD_long_range_regions'] = params.step_1b_identify_genetic_associations_gwas_high_LD_long_range_regions
-    summary['step_1b_identify_genetic_associations_gwas_rsid_cpra_table'] = params.step_1b_identify_genetic_associations_gwas_rsid_cpra_table
-    summary['step_1b_identify_genetic_associations_gwas_saige'] = params.step_1b_identify_genetic_associations_gwas_saige
-    summary['step_1b_identify_genetic_associations_gwas_regenie'] = params.step_1b_identify_genetic_associations_gwas_regenie
-    summary['step_1b_identify_genetic_associations_gwas_run_pca'] = params.step_1b_identify_genetic_associations_gwas_run_pca
-    summary['step_1b_identify_genetic_associations_gwas_pheno_data'] = params.step_1b_identify_genetic_associations_gwas_pheno_data
-    summary['step_1b_identify_genetic_associations_gwas_phenotype_colname'] = params.step_1b_identify_genetic_associations_gwas_phenotype_colname
-    summary['step_1b_identify_genetic_associations_gwas_mind_threshold'] = params.step_1b_identify_genetic_associations_gwas_mind_threshold
-    summary['step_1b_identify_genetic_associations_gwas_miss'] = params.step_1b_identify_genetic_associations_gwas_miss
-    summary['step_1b_identify_genetic_associations_gwas_miss_test_p_threshold'] = params.step_1b_identify_genetic_associations_gwas_miss_test_p_threshold
-    summary['step_1b_identify_genetic_associations_gwas_sex_check'] = params.step_1b_identify_genetic_associations_gwas_sex_check
-    summary['step_1b_identify_genetic_associations_gwas_remove_related_samples'] = params.step_1b_identify_genetic_associations_gwas_remove_related_samples
-    summary['step_1b_identify_genetic_associations_gwas_reference_data_bucket'] = params.step_1b_identify_genetic_associations_gwas_reference_data_bucket
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_job_name'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_job_name
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_cost_limit'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_cost_limit
     summary['step_1c_identify_genetic_associations_harmonisation_cloudos_instance_disk_space'] = params.step_1c_identify_genetic_associations_harmonisation_cloudos_instance_disk_space
@@ -370,7 +347,7 @@ workflow {
         pheno_job_id = trigger_step_1a_identify_genetic_associations_phenofile.out.ch_step_1a_job_id
 
         // run gwas (regenie)
-        trigger_step_1b_identify_genetic_associations_gwas(
+        trigger_step_1b_gwas_prepare_multi_sample_genotypes(
             phenofile,
             genotype_files_list,
             configure_project.out.ch_project_name,
@@ -378,10 +355,37 @@ workflow {
             configure_project.out.ch_workspace_id,
             end_to_end_job_id
         )
-        gwas = step_check(
-            trigger_step_1b_identify_genetic_associations_gwas.out.ch_gwas_out
+        geno_out_ld_pruned = step_check(
+            trigger_step_1b_gwas_prepare_multi_sample_genotypes.out.ch_geno_out_ld_pruned
         )
-        gwas_job_id = trigger_step_1b_identify_genetic_associations_gwas.out.ch_step_1b_job_id
+        geno_out_merged = step_check(
+            trigger_step_1b_gwas_prepare_multi_sample_genotypes.out.ch_geno_out_merged
+        )
+
+        step_1b_geno_multisample = trigger_step_1b_gwas_prepare_multi_sample_genotypes.out.ch_step_1b_geno_multisample
+
+        trigger_step_1b_gwas_annotate_samples(
+            geno_out_ld_pruned,
+            geno_out_ld_pruned,
+            configure_project.out.ch_project_name,
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
+        )
+
+        pca_out = step_check(
+            trigger_step_1b_gwas_annotate_samples.out.ch_pca_out
+        )
+
+        trigger_step_1b_gwas(
+            phenofile,
+            genotype_files_list,
+            pca_out,
+            configure_project.out.ch_project_name,
+            configure_project.out.ch_project_bucket,
+            configure_project.out.ch_workspace_id,
+            end_to_end_job_id
+        )
 
         // run harmonisation
         trigger_step_1c_identify_genetic_associations_harmonisation(
