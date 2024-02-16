@@ -1,104 +1,40 @@
-# Changelog
+## Changelog
 
-## v1.3.0
+PR centric changelog with description of notable changes implemented in a PR.
 
-### Enhancements
+### 1.1.0
 
-- Adds case/control matching by age and sex
+PR: https://github.com/lifebit-ai/end-to-end-target-identification/pull/10
 
-## v1.2.3
+#### Added
 
-### Enhancements
+- Added `outdir` parameter in order to redirect `publishDir` through orchestrator job id
+- Added `end_to_end_job_id` variable to all step processes
 
-- Adds option to use SSM parameters for database credentials
+### 1.0.0
 
-## v1.2.2
+PR: https://github.com/lifebit-ai/drug-discovery-protocol-orchestrator-nf/pull/9
 
-### Fixes
+#### Added
 
-- Updates the documentation
+<!--
+Example:
+- Added Dockerfile
+-->
+- Added profile `test_full_gel_lifebit_connect_staging`
 
-## v1.2.1
+#### Changed
 
-### Fixes
+<!--
+Example:
+- Updated template ci.yml test
+-->
+- Updated default parameters in `nextflow.config`
 
-- In `codelist` mode, user `1` as default label for controls and `2` as default label for cases.
+#### Removed
 
-## v1.2.0
-
-### Fixes
-
-- Adds option to add specific database credentials
-
-## v1.1.5
-
-### Fixes
-
-- Corrects headers in plink phenofile output.
-
-### Enhancements
-
-- Adds option to provide a valid range for covariates and impute with either the median or mean.
-
-## v1.1.4
-
-### Fixes
-
-- Adds ability to automaticaly start a CloudOS job for CI testing.
-
-## v1.1.3
-
-### Fixes
-
-- Updating the docs and container with the new pipeline name
-
-## v1.1.2
-
-### Fixes
-
-- Fixes plink gender encodings
-
-## v1.1.1
-
-### Enhancements
-
-- Adds Jenkinsfile
-
-## v1.1.0
-
-### Enhancements
-
-- Makes `Capr` responsible for rendering cohort JSON and SQL to allow complex and flexible cohort definitions. 
-- Changes the format of user cohort specifications to account for the use of `Capr`.
-- Adds a new mode where cohorts can be defined using a codelist, complete with parameters to control control group definitions.
-- Adds a parameter which reformats OMOP style phenofiles to plink style 
-
-### Enhancements
-
-## v1.0.4
-
-### Enhancements
-
-- Adds support for SQLlite databases and uses [Eunomia](https://github.com/OHDSI/Eunomia) database for testing (Fixes BL-582 and BL-595)
-- Removes external dependency by storing postgres jar connection files in `assets` (Fixes BL-507)
-
-## v1.0.3
-
-### Enhancements
-
-- Adds enhancements
-
-## v1.0.2
-
-### Enhancements
-
-- Improves documentation
-
-## v1.0.1
-
-### Enhancements
-
-- First release
-- Includes basic functionality and extensive documentation
-
-
+<!--
+Example:
+- Removed containers/ folder
+-->
+- Removed S3-related parameters (`s3_outdir`, `data_source`, `phenotype_group`, `phenotype_label`). The result connection from one process to annother is done using CloudOS now.

@@ -1,0 +1,179 @@
+---
+output: 
+  html_document:
+    code_download: false
+    toc: true                  # table of content true
+    toc_depth: 3               # upto three depths of headings (specified by #, ## and ###)
+    toc_float: true
+    number_sections: true      # if you want number sections at each table header
+    theme: united              # many options for theme, this one is my favorite.
+    highlight: tango           # specifies the syntax highlighting style
+    css: 'style.css'
+params:
+  table_smr:
+  table_closest_genes:
+  table_multixcan:
+  forest_pval:
+  forest_plot:
+  locuszoom_plot:
+  pval_table:
+  barplot: "tissue_enrichment_plot.svg"
+title: "`r paste0('End to end target identification Report Summary' , '') `"
+author: ""
+date: ""
+---
+
+<img src="logo.png" width=100 style="position:absolute;top:4px;bottom:4px;right:4px;" />
+
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
+```
+
+```{r echo = FALSE}
+suppressPackageStartupMessages({
+  library(reactable)
+  library(reactR)
+  library(reactablefmtr)
+  library(magrittr)
+  library(stringr)
+  library(htmltools)
+  library(dplyr)
+  library(knitr)
+})
+source("reactable_funcs.R")
+```
+
+```{r include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+# About
+
+The end to end target identification pipeline orchestrates the execution of various methods. 
+
+# Step 2. Identifying prioritised genes
+
+This pipeline uses a series of tools to identify the associations between variants and genes.
+The first is a forest plot that shows the effect sizes (b_SMR) derived from MR in terms of odd ratio for each 
+significant variant below the chosen p-value threshold.
+The second plot is a stacked-locuszoom plot which describe the effect size distribution for a 1Mb region around the chosen or the automaticaly selected variant based on the the most significant p-value (p_SMR) present.
+
+```{r echo = FALSE}
+source("DTable.R")
+fignumber<-1
+```
+
+```{r eval=(!is.null(params$forest_plot))}
+asis_output("## Visualisations\n\n")
+asis_output("### Forest plot of SMR signals with a p-value lower than the threshold given\n\n")
+figure_name <- paste0("Figure ", "forest-plot", " ")
+figure_caption <- "forest plot"
+knitr::include_graphics(params$forest_plot, )
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
+```
+
+```{r eval=(!is.null(params$locuszoom_plot))}
+asis_output("### Stacked locuszoom plot for SMR results  \n\n")
+figure_name <- paste0("Figure", "locuszoom-plot", " ")
+figure_caption <- "locuszoom-plot"
+knitr::include_graphics(params$locuszoom_plot, )
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
+```
+
+```{r eval=(!is.null(params$table_smr))}
+# Read the table in as a dataframe
+forest_pval <<- as.numeric(params$forest_pval)
+data_SMR <- read.table(params$table_smr, h = T)
+# Filter the data to keep rows with "p_SMR" lower than forest_pval
+filtered_df_smr <- data_SMR %>%
+  filter(p_SMR < forest_pval)
+# Sort the filtered data to keep the top 100 rows based on "number_of_paths"
+if (nrow(filtered_df_smr) == 0) {
+  top_100_SMR <- data.frame(SMR_data = "No associations found with the parameters used. Please update either p-value for the forestplot")
+} else {
+  top_100_SMR <- filtered_df_smr %>%
+    arrange(p_SMR) %>%
+    distinct() %>%
+    slice(1:100)
+}
+asis_output("## Showing 100 signals sorted by p-value for the SMR analysis\n\n")
+generateReactable(top_100_SMR)
+```
+
+```{r eval=(!is.null(params$table_closest_genes))}
+data_closest_gene <- read.table(params$table_closest_genes, h = T, sep = ",")
+if (nrow(data_closest_gene) == 0) {
+  top_100_closest_gene <- data.frame(variant_to_gene = "No associations found with the parameters used. Please update either p-value or check that the genome build is correct")
+} else {
+  top_100_closest_gene <- data_closest_gene %>%
+    arrange(distance_TSS) %>%
+    distinct() %>%
+    slice(1:100)
+}
+asis_output("## Showing 100 signals sorted by distance between a variant and a gene\n\n")
+# Generate reactable with data from reactable_funcs.R
+generateReactable(top_100_closest_gene)
+```
+
+```{r eval=(!is.null(params$table_multixcan))}
+data_multixcan <- read.table(params$table_multixcan, h = T, sep = "\t")
+top_100_multixcan <- data_multixcan %>%
+  arrange(pvalue) %>%
+  distinct() %>%
+  slice(1:100)
+asis_output("## Showing 100 signals sorted by p-value for the Multixcan analysis\n\n")
+generateReactable(top_100_multixcan)
+```
+
+# Step 3. Identifying Causal Genes and Pathways
+
+This step can be used to prioritise molecular phenotypes (like expression level of a gene, DNA methylation level at CpG sites) that mediate the genetic effects for complex trait and thus provide mechanistic interpretation of the GWAS signal.
+
+
+# Step 5. Identifying Mechanism of Action
+
+This pipeline uses a tissue enrichment analysis to identify the associations between variants and tissues. The plot below describes the p-value associated with the SNPs enrichment for each tissue.
+The table below contains the data used for the plot.
+
+## Visualisations
+
+### Bar plot of tissue enrichment signals with normal and adjusted p-value associated
+
+```{r enrichment_plot}
+figure_name <- paste0("Figure ", "tissue-enrichment-plot", " ")
+figure_caption <- "forest plot"
+knitr::include_graphics(params$barplot)
+htmltools::tags$figcaption(
+  style = "caption-side: bottom; text-align: center; font-size: 85%%; color: #71879d",
+  htmltools::em(figure_name),
+  htmltools::em(figure_caption)
+)
+```
+
+## Tables
+
+```{r pval_table, eval=(!is.null(params$pval_table))}
+# Read the table in as a dataframe
+data_tissue_enrichment <- read.table(params$pval_table, h = TRUE)
+# Filter the data to keep rows with "p_SMR" lower than forest_pval
+# Sort the filtered data to keep the top 100 rows based on "number_of_paths"
+if (nrow(data_tissue_enrichment) < 1) {
+  asis_output("### There are no signals to display for this study\n\n")
+} else {
+  top_100_tissue_enrichment <- data_tissue_enrichment %>%
+    arrange(pval_adjusted) %>%
+    distinct() %>%
+    slice(1:100)
+  asis_output("### Showing 100 signals sorted by adjusted p-values\n\n")
+  generateReactable(top_100_tissue_enrichment)
+}
+```
