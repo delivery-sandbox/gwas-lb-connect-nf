@@ -14,22 +14,22 @@ nextflow.enable.dsl = 2
 | Imports              |
 --------------------- */
 
-include { configure_project } from './modules/utils/configure_project.nf'
-include { trigger_step_1a_identify_genetic_associations_phenofile } from './modules/step_1/step_1a_identify_genetic_associations_phenofile.nf'
-include { trigger_step_1b_gwas_prepare_multi_sample_genotypes } from './modules/step_1/step_1b_identify_genetic_associations_gwas.nf'
-include { trigger_step_1b_gwas_annotate_samples } from './modules/step_1/step_1b_gwas_annotate_samples.nf'
-include { trigger_step_1b_gwas } from './modules/step_1/step_1b_gwas.nf'
-include { trigger_step_1c_identify_genetic_associations_harmonisation } from './modules/step_1/step_1c_identify_genetic_associations_harmonisation.nf'
-include { trigger_step_2_identify_prioritised_genes } from './modules/step_2/identify_prioritised_genes.nf'
-include { trigger_step_3_identify_causal_genes_and_pathways } from './modules/step_3/identify_causal_genes_and_pathways.nf'
-include { trigger_step_4_identify_causal_proteins } from './modules/step_4/identify_causal_proteins.nf'
-include { trigger_step_5_identify_mechanism_of_action_liftover } from './modules/step_5/identify_mechanism_of_action.nf'
-include { trigger_step_5_identify_mechanism_of_action_finemapping } from './modules/step_5/identify_mechanism_of_action.nf'
-include { trigger_step_5_identify_mechanism_of_action_cheers } from './modules/step_5/identify_mechanism_of_action.nf'
-include { trigger_step_6_identify_candidate_drugs_gsea } from './modules/step_6/identify_candidate_drugs.nf'
-include { trigger_step_6_identify_candidate_drugs_drug2ways } from './modules/step_6/identify_candidate_drugs.nf'
-include { combine_reports } from './modules/utils/generate_reports.nf'
-include { step_check; file_check } from './modules/utils/check_files.nf'
+include { configure_project } from '../modules/utils/configure_project.nf'
+include { trigger_step_1a_identify_genetic_associations_phenofile } from '../modules/step_1/step_1a_identify_genetic_associations_phenofile.nf'
+include { trigger_step_1b_gwas_prepare_multi_sample_genotypes } from '../modules/step_1/step_1b_identify_genetic_associations_gwas.nf'
+include { trigger_step_1b_gwas_annotate_samples } from '../modules/step_1/step_1b_gwas_annotate_samples.nf'
+include { trigger_step_1b_gwas } from '../modules/step_1/step_1b_gwas.nf'
+include { trigger_step_1c_identify_genetic_associations_harmonisation } from '../modules/step_1/step_1c_identify_genetic_associations_harmonisation.nf'
+include { trigger_step_2_identify_prioritised_genes } from '../modules/step_2/identify_prioritised_genes.nf'
+include { trigger_step_3_identify_causal_genes_and_pathways } from '../modules/step_3/identify_causal_genes_and_pathways.nf'
+include { trigger_step_4_identify_causal_proteins } from '../modules/step_4/identify_causal_proteins.nf'
+include { trigger_step_5_identify_mechanism_of_action_liftover } from '../modules/step_5/identify_mechanism_of_action.nf'
+include { trigger_step_5_identify_mechanism_of_action_finemapping } from '../modules/step_5/identify_mechanism_of_action.nf'
+include { trigger_step_5_identify_mechanism_of_action_cheers } from '../modules/step_5/identify_mechanism_of_action.nf'
+include { trigger_step_6_identify_candidate_drugs_gsea } from '../modules/step_6/identify_candidate_drugs.nf'
+include { trigger_step_6_identify_candidate_drugs_drug2ways } from '../modules/step_6/identify_candidate_drugs.nf'
+include { combine_reports } from '../modules/utils/generate_reports.nf'
+include { step_check; file_check } from '../modules/utils/check_files.nf'
 
 /* --------------------
 | Summary              |
