@@ -380,6 +380,7 @@ workflow {
         trigger_step_1b_gwas(
             phenofile,
             genotype_files_list,
+            geno_out_ld_pruned,
             pca_out,
             configure_project.out.ch_project_name,
             configure_project.out.ch_project_bucket,
