@@ -389,6 +389,7 @@ workflow {
         )
 
         // run harmonisation
+        gwas = trigger_step_1b_gwas.out.ch_gwas_out
         trigger_step_1c_identify_genetic_associations_harmonisation(
             gwas,
             configure_project.out.ch_project_name,
